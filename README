@@ -1,0 +1,35 @@
+ABOUT
+-----
+xviweb is a small and simple web server that's written in C++.
+Rather than being a full-featured, general purpose web server,
+it is intended to be easily extensible and usable as part of
+web applications written in C++; as such, it implements only a
+subset of standard HTTP server features that are necessary to
+that end.
+
+xviweb is distributed under a BSD-style license (see the
+"COPYING" file included with xviweb for more information).
+It is developed by Josh Beam (http://joshbeam.com/).
+
+PLATFORMS
+---------
+xviweb has been developed and tested on the following
+operating systems:
+
+    - Mac OS X 10.7 (Lion)
+
+COMPILING
+---------
+xviweb uses the CMake build system. You can compile it by
+running the following commands from within the root directory
+of the xviweb source:
+
+$ mkdir build
+$ cd build
+$ cmake .. && make
+
+When the build is complete, an "xviweb" executable will be
+present within the src subdirectory of the build directory.
+The xviweb executable can be placed wherever you wish. You
+can run xviweb with the "--help" command line option for
+usage information.
