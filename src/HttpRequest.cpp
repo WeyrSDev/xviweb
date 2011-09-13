@@ -60,29 +60,29 @@ HttpRequest::getHeaderValue(const string &name) const
 	return (iter != m_headerMap.end()) ? iter->second : string("");
 }
 
-void
-HttpRequest::parseQueryStringKeyValuePair(const string &pair)
+static void
+parseKeyValuePair(HttpRequestMap &map, const string &pair)
 {
 	size_t tmp = pair.find('=');
 	if(tmp != string::npos) {
 		string key = pair.substr(0, tmp);
 		string value = pair.substr(tmp + 1);
-		m_queryStringMap.insert(make_pair(key, value));
+		map.insert(make_pair(key, value));
 	}
 }
 
-void
-HttpRequest::parseQueryString(const string &queryString)
+static void
+parseKeyValueList(HttpRequestMap &map, const string &list)
 {
 	size_t start = 0;
 	size_t end;
 
-	while((end = queryString.find('&', start)) != string::npos) {
-		parseQueryStringKeyValuePair(queryString.substr(start, end - start));
+	while((end = list.find('&', start)) != string::npos) {
+		parseKeyValuePair(map, list.substr(start, end - start));
 		start = end + 1;
 	}
 
-	parseQueryStringKeyValuePair(queryString.substr(start));
+	parseKeyValuePair(map, list.substr(start));
 }
 
 bool
@@ -113,7 +113,7 @@ HttpRequest::parseRequestLine(const string &line)
 		string queryString = m_path.substr(start + 1);
 		m_path = m_path.substr(0, start);
 
-		parseQueryString(queryString);
+		parseKeyValueList(m_queryStringMap, queryString);
 	}
 
 	return true;

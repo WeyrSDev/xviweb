@@ -41,9 +41,6 @@ class HttpRequest
 		HttpRequestMap m_queryStringMap;
 		HttpRequestMap m_headerMap;
 
-		void parseQueryString(const std::string &queryString);
-		void parseQueryStringKeyValuePair(const std::string &pair);
-
 	public:
 		std::string getVerb() const;
 		std::string getPath() const;
