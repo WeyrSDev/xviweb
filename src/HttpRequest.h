@@ -27,7 +27,9 @@
 #define __HTTPREQUEST_H__
 
 #include <string>
-#include <vector>
+#include <map>
+
+typedef std::map<std::string, std::string> HttpRequestMap;
 
 class HttpRequest
 {
@@ -36,11 +38,8 @@ class HttpRequest
 		std::string m_path;
 		std::string m_version;
 
-		std::vector <std::string> m_queryStringNames;
-		std::vector <std::string> m_queryStringValues;
-
-		std::vector <std::string> m_headerNames;
-		std::vector <std::string> m_headerValues;
+		HttpRequestMap m_queryStringMap;
+		HttpRequestMap m_headerMap;
 
 		void parseQueryString(const std::string &queryString);
 		void parseQueryStringKeyValuePair(const std::string &pair);

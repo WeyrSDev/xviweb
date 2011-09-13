@@ -49,23 +49,15 @@ HttpRequest::getVersion() const
 string
 HttpRequest::getQueryStringValue(const string &name) const
 {
-	for(unsigned int i = 0; i < m_queryStringNames.size(); ++i) {
-		if(m_queryStringNames[i] == name)
-			return m_queryStringValues[i];
-	}
-
-	return string("");
+	HttpRequestMap::const_iterator iter = m_queryStringMap.find(name);
+	return (iter != m_queryStringMap.end()) ? iter->second : string("");
 }
 
 string
 HttpRequest::getHeaderValue(const string &name) const
 {
-	for(unsigned int i = 0; i < m_headerNames.size(); ++i) {
-		if(m_headerNames[i] == name)
-			return m_headerValues[i];
-	}
-
-	return string("");
+	HttpRequestMap::const_iterator iter = m_headerMap.find(name);
+	return (iter != m_headerMap.end()) ? iter->second : string("");
 }
 
 void
@@ -75,9 +67,7 @@ HttpRequest::parseQueryStringKeyValuePair(const string &pair)
 	if(tmp != string::npos) {
 		string key = pair.substr(0, tmp);
 		string value = pair.substr(tmp + 1);
-
-		m_queryStringNames.push_back(key);
-		m_queryStringValues.push_back(value);
+		m_queryStringMap.insert(make_pair(key, value));
 	}
 }
 
@@ -142,9 +132,8 @@ HttpRequest::parseHeaderLine(const string &line)
 	size_t start = end + 2;
 	string value = line.substr(start);
 
-	// add the name/value pair to the vectors
-	m_headerNames.push_back(name);
-	m_headerValues.push_back(value);
+	// add the name/value pair to the header map
+	m_headerMap.insert(make_pair(name, value));
 
 	return true;
 }
