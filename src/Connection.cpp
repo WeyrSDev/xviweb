@@ -29,6 +29,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include "Connection.h"
+#include "String.h"
 
 using namespace std;
 
@@ -46,7 +47,7 @@ Connection::Connection(int fd, const Address &address, unsigned short port)
 {
 	m_readMilliseconds = getMilliseconds();
 
-	cout << m_address.toString() << " port " << m_port << ": Connection opened" << endl;
+	cout << toString() << ": Connection opened" << endl;
 }
 
 Connection::Connection(const Address &address, unsigned short port)
@@ -88,13 +89,13 @@ Connection::Connection(const Address &address, unsigned short port)
 		}
 	}
 
-	cout << m_address.toString() << " port " << m_port << ": Connection opened" << endl;
+	cout << toString() << ": Connection opened" << endl;
 }
 
 Connection::~Connection()
 {
 	close(m_fd);
-	cout << m_address.toString() << " port " << m_port << ": Connection closed" << endl;
+	cout << toString() << ": Connection closed" << endl;
 }
 
 int
@@ -193,6 +194,12 @@ void
 Connection::sendLine(const char *line)
 {
 	sendLine(string(line));
+}
+
+string
+Connection::toString() const
+{
+	return m_address.toString() + " port " + String::fromUInt(m_port);
 }
 
 void

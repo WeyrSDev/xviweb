@@ -133,7 +133,7 @@ HttpConnection::sendErrorResponse(int errorCode, const char *errorDesc,
 void
 HttpConnection::sendBadRequestResponse()
 {
-	cerr << getAddress().toString() << " port " << getPort() << ": Bad request" << endl;
+	cerr << toString() << ": Bad request" << endl;
 	sendErrorResponse(400, "Bad Request", "Your request could not be understood.");
 }
 
@@ -145,7 +145,7 @@ HttpConnection::stringRead(const string &s)
 	m_bytesRead += s.length();
 	if(m_bytesRead > maxRequestSize) {
 		m_state = HTTP_CONNECTION_STATE_DONE;
-		cerr << getAddress().toString() << " port " << getPort() << ": Maximum request size exceeded" << endl;
+		cerr << toString() << ": Maximum request size exceeded" << endl;
 	}
 }
 
@@ -161,7 +161,7 @@ HttpConnection::lineRead(const string &line)
 				sendBadRequestResponse();
 			} else {
 				m_state = HTTP_CONNECTION_STATE_READING_HEADERS;
-				cout << getAddress().toString() << " port " << getPort() << ": Received request: " << line << endl;
+				cout << toString() << ": Received request: " << line << endl;
 			}
 			break;
 		case HTTP_CONNECTION_STATE_READING_HEADERS:

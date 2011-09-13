@@ -56,6 +56,8 @@ class Connection
 		void sendLine(const std::string &line);
 		void sendLine(const char *line);
 
+		std::string toString() const;
+
 	protected:
 		virtual void closed();
 		virtual void stringRead(const std::string &s);
