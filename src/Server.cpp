@@ -115,7 +115,7 @@ Server::getPort() const
 void
 Server::attachResponder(Responder *responder)
 {
-	m_responders.push_back(responder);
+	m_responders.insert(m_responders.begin(), responder);
 }
 
 HttpConnection *
@@ -162,8 +162,8 @@ Server::processRequest(HttpConnection *conn)
 {
 	// loop through responders and stop when
 	// one matches the request
-	for(unsigned int i = m_responders.size(); i > 0; --i) {
-		Responder *responder = m_responders[i-1];
+	for(unsigned int i = 0; i < m_responders.size(); ++i) {
+		Responder *responder = m_responders[i];
 		if(responder->matchesRequest(conn->getRequest())) {
 			responder->respond(conn);
 			break;

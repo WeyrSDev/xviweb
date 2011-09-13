@@ -33,6 +33,8 @@ using namespace std;
 
 FileResponder::FileResponder()
 {
+	m_rootDirectory = ".";
+
 	// add some standard MIME types
 	addMimeType("text/plain", "txt");
 	addMimeType("text/html", "html");
