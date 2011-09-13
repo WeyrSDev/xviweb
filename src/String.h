@@ -40,6 +40,7 @@ class String : public std::string
 		static std::string toUpper(const std::string &s);
 		static bool isWhitespace(char c);
 		static std::string trim(const std::string &s);
+		static std::string htmlEncode(const std::string &s);
 };
 
 #endif /* __STRING_H__ */

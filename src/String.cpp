@@ -146,3 +146,42 @@ String::trim(const string &s)
 
 	return s.substr(start, end - start + 1);
 }
+
+string
+String::htmlEncode(const string &s)
+{
+	const char *specialChars = "<>&\"";
+
+	size_t tmp = s.find_first_of(specialChars);
+	if(tmp == string::npos) {
+		return s;
+	} else {
+		string t = s;
+
+		do {
+			switch(t[tmp]) {
+				default:
+					++tmp;
+					break;
+				case '<':
+					t.replace(tmp, 1, "&lt;");
+					tmp += 4;
+					break;
+				case '>':
+					t.replace(tmp, 1, "&gt;");
+					tmp += 4;
+					break;
+				case '&':
+					t.replace(tmp, 1, "&amp;");
+					tmp += 5;
+					break;
+				case '"':
+					t.replace(tmp, 1, "&quot;");
+					tmp += 6;
+					break;
+			}
+		} while((tmp = t.find_first_of(specialChars, tmp)) != string::npos);
+
+		return t;
+	}
+}
