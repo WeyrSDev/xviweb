@@ -264,3 +264,50 @@ String::urlDecode(const string &s)
 		return t;
 	}
 }
+
+bool
+String::endsWith(const string &s1, const string &s2, bool ignoreCase)
+{
+	const char diff = 'a' - 'A';
+
+	if(s1.length() < s2.length())
+		return false;
+
+	size_t i = s1.length() - s2.length();
+
+	if(ignoreCase) {
+		// do a case insensitive comparison of the
+		// end of the first string to the second
+		for(size_t j = 0; j < s2.length(); ++j) {
+			char c1 = s1[i++];
+			char c2 = s2[j];
+
+			// convert upper-case characters to lower-case
+			if(c1 >= 'A' && c1 <= 'Z')
+				c1 += diff;
+			if(c2 >= 'A' && c2 <= 'Z')
+				c2 += diff;
+
+			if(c1 != c2)
+				return false;
+		}
+	} else {
+		// do a case sensitive comparison of the
+		// end of the first string to the second
+		for(size_t j = 0; j < s2.length(); ++j) {
+			char c1 = s1[i++];
+			char c2 = s2[j];
+
+			if(c1 != c2)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+bool
+String::endsWith(const string &s1, const string &s2)
+{
+	return endsWith(s1, s2, false);
+}

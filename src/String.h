@@ -45,6 +45,8 @@ class String : public std::string
 		static std::string trim(const std::string &s);
 		static std::string htmlEncode(const std::string &s);
 		static std::string urlDecode(const std::string &s);
+		static bool endsWith(const std::string &s1, const std::string &s2, bool ignoreCase);
+		static bool endsWith(const std::string &s1, const std::string &s2);
 };
 
 #endif /* __STRING_H__ */

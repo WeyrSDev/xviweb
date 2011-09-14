@@ -69,38 +69,12 @@ FileResponder::addMimeType(const string &type, const string &fileExtension)
 	m_mimeFileExtensions.push_back(string(".") + fileExtension);
 }
 
-static bool
-stringEndsWith(const string &s1, const string &s2)
-{
-	if(s1.length() < s2.length())
-		return false;
-
-	// do a case insensitive comparison of the
-	// end of the first string to the second
-	size_t i = s1.length() - s2.length();
-	for(size_t j = 0; j < s2.length(); ++j) {
-		char c1 = s1[i++];
-		char c2 = s2[j];
-
-		// convert upper-case characters to lower-case
-		if(c1 >= 'A' && c1 <= 'Z')
-			c1 = (c1 - 'A') + 'a';
-		if(c2 >= 'A' && c2 <= 'Z')
-			c2 = (c2 - 'A') + 'a';
-
-		if(c1 != c2)
-			return false;
-	}
-
-	return true;
-}
-
 string
 FileResponder::getMimeTypeForFile(const string &path) const
 {
 	// find the type associated with the file extension
 	for(unsigned int i = 0; i < m_mimeTypes.size(); ++i) {
-		if(stringEndsWith(path, m_mimeFileExtensions[i]))
+		if(String::endsWith(path, m_mimeFileExtensions[i], true))
 			return m_mimeTypes[i];
 	}
 
