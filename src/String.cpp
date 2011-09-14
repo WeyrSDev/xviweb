@@ -88,6 +88,53 @@ String::toUInt(const string &s)
 	return n;
 }
 
+unsigned int
+String::hexToUInt(const string &s, size_t index, size_t length)
+{
+	unsigned int value = 0;
+
+	// set length to be one higher than the index
+	// of the last character to consider; if length
+	// is zero, go to the end of the string
+	if(length == 0) {
+		length = s.length();
+	} else {
+		length += index;
+		if(length > s.length())
+			length = s.length();
+	}
+
+	while(index < length) {
+		char c = s[index++];
+		if(c >= '0' && c <= '9') {
+			value *= 16;
+			value += (unsigned int)(c - '0');
+		} else if(c >= 'a' && c <= 'f') {
+			value *= 16;
+			value += (unsigned int)(c - 'a' + 10);
+		} else if(c >= 'A' && c <= 'F') {
+			value *= 16;
+			value += (unsigned int)(c - 'A' + 10);
+		} else {
+			break;
+		}
+	}
+
+	return value;
+}
+
+unsigned int
+String::hexToUInt(const string &s, size_t index)
+{
+	return hexToUInt(s, index, 0);
+}
+
+unsigned int
+String::hexToUInt(const string &s)
+{
+	return hexToUInt(s, 0, 0);
+}
+
 string
 String::toLower(const string &s)
 {
@@ -180,6 +227,38 @@ String::htmlEncode(const string &s)
 					tmp += 6;
 					break;
 			}
+		} while((tmp = t.find_first_of(specialChars, tmp)) != string::npos);
+
+		return t;
+	}
+}
+
+string
+String::urlDecode(const string &s)
+{
+	const char *specialChars = "+%";
+
+	size_t tmp = s.find_first_of(specialChars);
+	if(tmp == string::npos) {
+		return s;
+	} else {
+		string t = s;
+		size_t length = t.length();
+
+		do {
+			switch(t[tmp]) {
+				default:
+					break;
+				case '+':
+					t[tmp] = ' ';
+					break;
+				case '%':
+					if(tmp + 2 < length)
+						t.replace(tmp, 3, 1, (char)hexToUInt(t, tmp + 1, 2));
+					break;
+			}
+
+			++tmp;
 		} while((tmp = t.find_first_of(specialChars, tmp)) != string::npos);
 
 		return t;

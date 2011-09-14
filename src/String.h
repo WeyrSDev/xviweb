@@ -36,11 +36,15 @@ class String : public std::string
 		static std::string hexFromUInt(unsigned int n);
 		static int toInt(const std::string &s);
 		static unsigned int toUInt(const std::string &s);
+		static unsigned int hexToUInt(const std::string &s, size_t index, size_t length);
+		static unsigned int hexToUInt(const std::string &s, size_t index);
+		static unsigned int hexToUInt(const std::string &s);
 		static std::string toLower(const std::string &s);
 		static std::string toUpper(const std::string &s);
 		static bool isWhitespace(char c);
 		static std::string trim(const std::string &s);
 		static std::string htmlEncode(const std::string &s);
+		static std::string urlDecode(const std::string &s);
 };
 
 #endif /* __STRING_H__ */

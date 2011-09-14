@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include "HttpRequest.h"
+#include "String.h"
 
 using namespace std;
 
@@ -65,8 +66,8 @@ parseKeyValuePair(HttpRequestMap &map, const string &pair)
 {
 	size_t tmp = pair.find('=');
 	if(tmp != string::npos) {
-		string key = pair.substr(0, tmp);
-		string value = pair.substr(tmp + 1);
+		string key = String::urlDecode(pair.substr(0, tmp));
+		string value = String::urlDecode(pair.substr(tmp + 1));
 		map.insert(make_pair(key, value));
 	}
 }
