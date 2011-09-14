@@ -37,6 +37,7 @@ class Connection
 		unsigned short m_port;
 		unsigned int m_readMilliseconds;
 
+	protected:
 		std::string m_line;
 
 	public:

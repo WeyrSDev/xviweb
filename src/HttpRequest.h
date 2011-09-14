@@ -40,6 +40,7 @@ class HttpRequest
 
 		HttpRequestMap m_queryStringMap;
 		HttpRequestMap m_headerMap;
+		HttpRequestMap m_postDataMap;
 
 	public:
 		std::string getVerb() const;
@@ -47,9 +48,11 @@ class HttpRequest
 		std::string getVersion() const;
 		std::string getQueryStringValue(const std::string &name) const;
 		std::string getHeaderValue(const std::string &name) const;
+		std::string getPostDataValue(const std::string &name) const;
 
 		bool parseRequestLine(const std::string &line);
 		bool parseHeaderLine(const std::string &line);
+		bool parsePostData(const std::string &line);
 };
 
 #endif /* __HTTPREQUEST_H__ */

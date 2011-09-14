@@ -36,6 +36,7 @@ HttpConnection::HttpConnection(int fd, const Address &address,
 {
 	m_state = HTTP_CONNECTION_STATE_AWAITING_REQUEST;
 	m_bytesRead = 0;
+	m_contentLength = 0;
 }
 
 HttpConnection::~HttpConnection()
@@ -138,6 +139,22 @@ HttpConnection::sendBadRequestResponse()
 }
 
 void
+HttpConnection::postDataRead(const string &s)
+{
+	m_postData += s;
+
+	// parse post data if all of it has been read
+	if(m_postData.length() == m_contentLength) {
+		if(m_request.parsePostData(m_postData) == false)
+			sendBadRequestResponse();
+		else
+			m_state = HTTP_CONNECTION_STATE_SENDING_RESPONSE;
+	} else if(m_postData.length() > m_contentLength) {
+		sendBadRequestResponse();
+	}
+}
+
+void
 HttpConnection::stringRead(const string &s)
 {
 	const unsigned int maxRequestSize = 8 * 1024;
@@ -147,6 +164,9 @@ HttpConnection::stringRead(const string &s)
 		m_state = HTTP_CONNECTION_STATE_DONE;
 		cerr << toString() << ": Maximum request size exceeded" << endl;
 	}
+
+	if(m_state == HTTP_CONNECTION_STATE_READING_POST_DATA)
+		postDataRead(s);
 }
 
 void
@@ -156,6 +176,9 @@ HttpConnection::lineRead(const string &line)
 	switch(m_state) {
 		default:
 			break;
+
+		// parse the first line of the request containing
+		// the verb, path, and HTTP version
 		case HTTP_CONNECTION_STATE_AWAITING_REQUEST:
 			if(m_request.parseRequestLine(line) == false) {
 				sendBadRequestResponse();
@@ -164,9 +187,18 @@ HttpConnection::lineRead(const string &line)
 				cout << toString() << ": Received request: " << line << endl;
 			}
 			break;
+
+		// parse headers until a blank line is received
 		case HTTP_CONNECTION_STATE_READING_HEADERS:
 			if(line.size() == 0) {
-				m_state = HTTP_CONNECTION_STATE_SENDING_RESPONSE;
+				if(m_request.getVerb() == "POST") {
+					// start reading post data
+					m_state = HTTP_CONNECTION_STATE_READING_POST_DATA;
+					m_contentLength = String::toUInt(m_request.getHeaderValue("Content-Length"));
+					postDataRead(m_line);
+				} else {
+					m_state = HTTP_CONNECTION_STATE_SENDING_RESPONSE;
+				}
 			} else {
 				if(m_request.parseHeaderLine(line) == false)
 					sendBadRequestResponse();

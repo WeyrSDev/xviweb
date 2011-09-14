@@ -33,6 +33,7 @@ enum HttpConnectionState
 {
 	HTTP_CONNECTION_STATE_AWAITING_REQUEST = 0,
 	HTTP_CONNECTION_STATE_READING_HEADERS,
+	HTTP_CONNECTION_STATE_READING_POST_DATA,
 	HTTP_CONNECTION_STATE_SENDING_RESPONSE,
 	HTTP_CONNECTION_STATE_DONE
 };
@@ -43,6 +44,8 @@ class HttpConnection : public Connection
 		HttpConnectionState m_state;
 		HttpRequest m_request;
 		unsigned int m_bytesRead;
+		unsigned int m_contentLength;
+		std::string m_postData;
 
 	public:
 		HttpConnection(int fd, const Address &address, unsigned short port);
@@ -59,6 +62,7 @@ class HttpConnection : public Connection
 
 	protected:
 		virtual void closed();
+		void postDataRead(const std::string &s);
 		virtual void stringRead(const std::string &s);
 		virtual void lineRead(const std::string &line);
 };

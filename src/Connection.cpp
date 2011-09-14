@@ -149,8 +149,8 @@ Connection::doRead()
 		size_t tmp;
 		while((tmp = m_line.find("\r\n")) != string::npos) {
 			s = m_line.substr(0, tmp);
-			lineRead(s);
 			m_line = m_line.substr(tmp + 2);
+			lineRead(s);
 		}
 	}
 

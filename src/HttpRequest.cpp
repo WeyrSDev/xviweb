@@ -50,15 +50,22 @@ HttpRequest::getVersion() const
 string
 HttpRequest::getQueryStringValue(const string &name) const
 {
-	HttpRequestMap::const_iterator iter = m_queryStringMap.find(name);
+	HttpRequestMap::const_iterator iter = m_queryStringMap.find(String::toLower(name));
 	return (iter != m_queryStringMap.end()) ? iter->second : string("");
 }
 
 string
 HttpRequest::getHeaderValue(const string &name) const
 {
-	HttpRequestMap::const_iterator iter = m_headerMap.find(name);
+	HttpRequestMap::const_iterator iter = m_headerMap.find(String::toLower(name));
 	return (iter != m_headerMap.end()) ? iter->second : string("");
+}
+
+string
+HttpRequest::getPostDataValue(const string &name) const
+{
+	HttpRequestMap::const_iterator iter = m_postDataMap.find(String::toLower(name));
+	return (iter != m_postDataMap.end()) ? iter->second : string("");
 }
 
 static void
@@ -66,7 +73,7 @@ parseKeyValuePair(HttpRequestMap &map, const string &pair)
 {
 	size_t tmp = pair.find('=');
 	if(tmp != string::npos) {
-		string key = String::urlDecode(pair.substr(0, tmp));
+		string key = String::toLower(String::urlDecode(pair.substr(0, tmp)));
 		string value = String::urlDecode(pair.substr(tmp + 1));
 		map.insert(make_pair(key, value));
 	}
@@ -134,7 +141,14 @@ HttpRequest::parseHeaderLine(const string &line)
 	string value = line.substr(start);
 
 	// add the name/value pair to the header map
-	m_headerMap.insert(make_pair(name, value));
+	m_headerMap.insert(make_pair(String::toLower(name), value));
 
+	return true;
+}
+
+bool
+HttpRequest::parsePostData(const string &line)
+{
+	parseKeyValueList(m_postDataMap, line);
 	return true;
 }
