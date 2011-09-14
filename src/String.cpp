@@ -71,7 +71,7 @@ String::hexFromUInt(unsigned int n)
 int
 String::toInt(const string &s)
 {
-	int n;
+	int n = 0;
 	stringstream stream(s);
 	stream >> n;
 
@@ -81,7 +81,7 @@ String::toInt(const string &s)
 unsigned int
 String::toUInt(const string &s)
 {
-	unsigned int n;
+	unsigned int n = 0;
 	stringstream stream(s);
 	stream >> n;
 
