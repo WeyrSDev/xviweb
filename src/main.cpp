@@ -165,8 +165,13 @@ main(int argc, char *argv[])
 
 	cout << "Listening for connections at " << address.toString() << " port " << port << endl;
 
-	while(g_running)
-		server->cycle();
+	while(g_running) {
+		try {
+			server->cycle();
+		} catch(const char *ex) {
+			cerr << "Error during cycle: " << ex << endl;
+		}
+	}
 
 	cout << endl << "Stopping server..." << endl;
 	delete server;
