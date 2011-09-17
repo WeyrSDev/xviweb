@@ -24,23 +24,14 @@
  */
 
 #include <iostream>
-#include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include "Connection.h"
 #include "String.h"
+#include "Util.h"
 
 using namespace std;
-
-static unsigned int
-getMilliseconds()
-{
-	struct timeval tv;
-	if(gettimeofday(&tv, NULL) == -1)
-		return 0;
-	return (unsigned int)((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
-}
 
 Connection::Connection(int fd, const Address &address, unsigned short port)
  : m_fd(fd), m_address(address), m_port(port)

@@ -7,6 +7,7 @@ set(SRCS
 	Responder.cpp
 	Server.cpp
 	String.cpp
+	Util.cpp
 	main.cpp
 )
 add_executable(xviweb ${SRCS})
