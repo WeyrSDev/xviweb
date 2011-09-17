@@ -27,8 +27,9 @@
 #define __STRING_H__
 
 #include <string>
+#include <vector>
 
-class String : public std::string
+class String
 {
 	public:
 		static std::string fromInt(int n);
@@ -47,6 +48,7 @@ class String : public std::string
 		static std::string urlDecode(const std::string &s);
 		static bool endsWith(const std::string &s1, const std::string &s2, bool ignoreCase);
 		static bool endsWith(const std::string &s1, const std::string &s2);
+		static std::vector <std::string> split(const std::string &s, const std::string &delimiter);
 };
 
 #endif /* __STRING_H__ */

@@ -311,3 +311,20 @@ String::endsWith(const string &s1, const string &s2)
 {
 	return endsWith(s1, s2, false);
 }
+
+vector <string>
+String::split(const string &s, const string &delimiter)
+{
+	vector <string> v;
+	size_t length = delimiter.length();
+	size_t start = 0;
+	size_t end;
+
+	while((end = s.find(delimiter, start)) != string::npos) {
+		v.push_back(s.substr(start, end - start));
+		start = end + length;
+	}
+
+	v.push_back(s.substr(start));
+	return v;
+}

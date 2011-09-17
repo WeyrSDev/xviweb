@@ -70,7 +70,7 @@ Address::getAddress() const
 string
 Address::toString() const
 {
-	String s;
+	string s;
 
 	if(m_type == ADDRESS_TYPE_IPV4) {
 		for(int i = 0; i < 4; ++i) {
