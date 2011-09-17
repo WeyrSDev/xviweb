@@ -35,7 +35,7 @@ class Connection
 		int m_fd;
 		Address m_address;
 		unsigned short m_port;
-		unsigned int m_readMilliseconds;
+		long m_readMilliseconds;
 
 	protected:
 		std::string m_line;
@@ -48,7 +48,7 @@ class Connection
 		int getFileDescriptor() const;
 		const Address &getAddress() const;
 		unsigned short getPort() const;
-		unsigned int getMillisecondsSinceLastRead() const;
+		long getMillisecondsSinceLastRead() const;
 
 		void doRead();
 		void sendString(const char *s, size_t size);

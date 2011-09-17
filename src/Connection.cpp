@@ -107,7 +107,7 @@ Connection::getPort() const
 	return m_port;
 }
 
-unsigned int
+long
 Connection::getMillisecondsSinceLastRead() const
 {
 	return getMilliseconds() - m_readMilliseconds;
