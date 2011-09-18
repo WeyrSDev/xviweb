@@ -49,7 +49,7 @@ class FileResponder : public Responder
 		std::string getMimeTypeForFile(const std::string &path) const;
 
 		bool matchesRequest(const HttpRequest &request) const;
-		void respond(HttpConnection *conn);
+		ResponderContext *respond(HttpConnection *conn);
 };
 
 #endif /* __FILERESPONDER_H__ */

@@ -126,7 +126,7 @@ FileResponder::matchesRequest(const HttpRequest &/*request*/) const
 	return true;
 }
 
-void
+ResponderContext *
 FileResponder::respond(HttpConnection *conn)
 {
 	// if the path returned by mapPath has a length
@@ -134,7 +134,7 @@ FileResponder::respond(HttpConnection *conn)
 	string path = mapPath(conn->getRequest().getPath());
 	if(path.length() == 0) {
 		conn->sendErrorResponse(403, "Forbidden", "The provided file path is invalid.");
-		return;
+		return NULL;
 	}
 
 	path = m_rootDirectory + path;
@@ -146,14 +146,14 @@ FileResponder::respond(HttpConnection *conn)
 		if(fd != -1)
 			close(fd);
 		conn->sendErrorResponse(404, "File Not Found", "The file that you requested does not exist.");
-		return;
+		return NULL;
 	}
 
 	// don't show directory listings
 	if(S_ISDIR(status.st_mode)) {
 		close(fd);
 		conn->sendErrorResponse(403, "Forbidden", "You do not have access to directory listings.");
-		return;
+		return NULL;
 	}
 
 	// get the MIME type for the file; if there's no
@@ -163,7 +163,7 @@ FileResponder::respond(HttpConnection *conn)
 	if(contentType.length() == 0) {
 		close(fd);
 		conn->sendErrorResponse(403, "Forbidden", "You do not have access to files of this type.");
-		return;
+		return NULL;
 	}
 
 	conn->beginResponse(200, "OK");
@@ -184,4 +184,5 @@ FileResponder::respond(HttpConnection *conn)
 	}
 
 	close(fd);
+	return NULL;
 }

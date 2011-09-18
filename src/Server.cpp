@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include "Server.h"
+#include "Util.h"
 
 using namespace std;
 
@@ -89,6 +90,10 @@ Server::~Server()
 	// close bound socket
 	close(m_fd);
 
+	// delete all responder contexts
+	for(unsigned int i = 0; i < m_responderContexts.size(); ++i)
+		delete m_responderContexts[i];
+
 	// delete all responders
 	for(unsigned int i = 0; i < m_responders.size(); ++i)
 		delete m_responders[i];
@@ -116,6 +121,19 @@ void
 Server::attachResponder(Responder *responder)
 {
 	m_responders.insert(m_responders.begin(), responder);
+}
+
+void
+Server::attachResponderContext(ResponderContext *context)
+{
+	unsigned int i = 0;
+	long wakeupTime = context->getWakeupTime();
+
+	while(i < m_responderContexts.size() &&
+	      wakeupTime > m_responderContexts[i]->getWakeupTime())
+		++i;
+
+	m_responderContexts.insert(m_responderContexts.begin() + i, context);
 }
 
 HttpConnection *
@@ -158,14 +176,25 @@ Server::acceptHttpConnection()
 }
 
 void
-Server::processRequest(HttpConnection *conn)
+Server::processRequest(HttpConnection *conn, unsigned int index)
 {
 	// loop through responders and stop when
 	// one matches the request
 	for(unsigned int i = 0; i < m_responders.size(); ++i) {
 		Responder *responder = m_responders[i];
 		if(responder->matchesRequest(conn->getRequest())) {
-			responder->respond(conn);
+			// respond to the request
+			ResponderContext *context = responder->respond(conn);
+
+			// if a ResponderContext was returned, attach it;
+			// otherwise, the response is done and we can delete
+			// the connection
+			if(context != NULL)
+				attachResponderContext(context);
+			else
+				delete conn;
+
+			m_connections[index] = NULL;
 			break;
 		}
 	}
@@ -207,7 +236,29 @@ Server::cycle()
 		fds[tmp].revents = 0;
 	}
 
-	if(poll(fds, nfds, 1000) > 0) {
+
+	// continue the responses for contexts that should
+	// wake up at this time
+	long currentTime = getMilliseconds();
+	while(m_responderContexts.size() != 0 &&
+	      m_responderContexts.front()->getWakeupTime() <= currentTime) {
+		// get the context and remove it from the vector
+		ResponderContext *context = m_responderContexts.front();
+		m_responderContexts.erase(m_responderContexts.begin());
+
+		// continue the context's response; if it returned
+		// a pointer to itself or a new context, attach it
+		context = context->continueResponse();
+		if(context != NULL)
+			attachResponderContext(context);
+	}
+
+	// poll until the next context should wake up
+	long sleepTime = 1000;
+	if(m_responderContexts.size() != 0)
+		sleepTime = m_responderContexts.front()->getWakeupTime() - currentTime;
+
+	if(poll(fds, nfds, sleepTime) > 0) {
 		// handle connections to the bound socket
 		if(fds[0].revents & POLLIN) {
 			HttpConnection *conn = acceptHttpConnection();
@@ -227,7 +278,8 @@ Server::cycle()
 				default:
 					break;
 				case HTTP_CONNECTION_STATE_SENDING_RESPONSE:
-					processRequest(conn);
+					processRequest(conn, i);
+					break;
 				case HTTP_CONNECTION_STATE_DONE:
 					delete conn;
 					m_connections[i] = NULL;

@@ -38,10 +38,11 @@ class Server
 		unsigned short m_port;
 
 		std::vector <Responder *> m_responders;
+		std::vector <ResponderContext *> m_responderContexts;
 		std::vector <HttpConnection *> m_connections;
 
 		HttpConnection *acceptHttpConnection();
-		void processRequest(HttpConnection *conn);
+		void processRequest(HttpConnection *conn, unsigned int index);
 
 	public:
 		Server(const Address &address, unsigned short port);
@@ -51,6 +52,7 @@ class Server
 		unsigned short getPort() const;
 
 		void attachResponder(Responder *responder);
+		void attachResponderContext(ResponderContext *context);
 
 		void cycle();
 };

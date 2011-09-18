@@ -24,6 +24,29 @@
  */
 
 #include "Responder.h"
+#include "Util.h"
+
+ResponderContext::ResponderContext(HttpConnection *conn)
+{
+	m_wakeupTime = 0;
+	m_conn = conn;
+}
+
+ResponderContext::~ResponderContext()
+{
+}
+
+void
+ResponderContext::sleep(long milliseconds)
+{
+	m_wakeupTime = getMilliseconds() + milliseconds;
+}
+
+long
+ResponderContext::getWakeupTime() const
+{
+	return m_wakeupTime;
+}
 
 Responder::Responder()
 {

@@ -28,6 +28,25 @@
 
 #include "HttpConnection.h"
 
+class ResponderContext
+{
+	private:
+		long m_wakeupTime;
+
+	protected:
+		HttpConnection *m_conn;
+
+		void sleep(long milliseconds);
+
+	public:
+		ResponderContext(HttpConnection *conn);
+		virtual ~ResponderContext();
+
+		long getWakeupTime() const;
+
+		virtual ResponderContext *continueResponse() = 0;
+};
+
 class Responder
 {
 	public:
@@ -35,7 +54,7 @@ class Responder
 		virtual ~Responder();
 
 		virtual bool matchesRequest(const HttpRequest &request) const = 0;
-		virtual void respond(HttpConnection *conn) = 0;
+		virtual ResponderContext *respond(HttpConnection *conn) = 0;
 };
 
 #endif /* __RESPONDER_H__ */
