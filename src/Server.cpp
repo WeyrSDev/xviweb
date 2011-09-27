@@ -243,10 +243,9 @@ Server::cycle()
 
 	// add each connection to fds
 	for(unsigned int i = 0; i < m_connections.size(); ++i) {
-		unsigned int tmp = i + 1;
-		fds[tmp].fd = m_connections[i].connection->getFileDescriptor();
-		fds[tmp].events = POLLIN;
-		fds[tmp].revents = 0;
+		fds[i].fd = m_connections[i].connection->getFileDescriptor();
+		fds[i].events = POLLIN;
+		fds[i].revents = 0;
 	}
 
 	// add the bound socket to fds
