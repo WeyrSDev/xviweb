@@ -30,6 +30,15 @@
 #include "HttpConnection.h"
 #include "Responder.h"
 
+class ServerConnection
+{
+	public:
+		HttpConnection *connection;
+		ResponderContext *context;
+
+		ServerConnection(HttpConnection *connectionValue, ResponderContext *contextValue = NULL);
+};
+
 class Server
 {
 	private:
@@ -38,11 +47,10 @@ class Server
 		unsigned short m_port;
 
 		std::vector <Responder *> m_responders;
-		std::vector <ResponderContext *> m_responderContexts;
-		std::vector <HttpConnection *> m_connections;
+		std::vector <ServerConnection> m_connections;
 
 		HttpConnection *acceptHttpConnection();
-		void processRequest(HttpConnection *conn, unsigned int index);
+		void processRequest(ServerConnection *conn);
 
 	public:
 		Server(const Address &address, unsigned short port);

@@ -26,10 +26,9 @@
 #include "Responder.h"
 #include "Util.h"
 
-ResponderContext::ResponderContext(HttpConnection *conn)
+ResponderContext::ResponderContext()
 {
 	m_wakeupTime = 0;
-	m_conn = conn;
 }
 
 ResponderContext::~ResponderContext()

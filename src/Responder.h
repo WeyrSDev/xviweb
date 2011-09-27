@@ -34,17 +34,15 @@ class ResponderContext
 		long m_wakeupTime;
 
 	protected:
-		HttpConnection *m_conn;
-
 		void sleep(long milliseconds);
 
 	public:
-		ResponderContext(HttpConnection *conn);
+		ResponderContext();
 		virtual ~ResponderContext();
 
 		long getWakeupTime() const;
 
-		virtual ResponderContext *continueResponse() = 0;
+		virtual ResponderContext *continueResponse(HttpConnection *conn) = 0;
 };
 
 class Responder
