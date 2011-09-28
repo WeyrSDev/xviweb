@@ -177,14 +177,6 @@ Server::processRequest(ServerConnection *conn)
 		if(responder->matchesRequest(conn->connection->getRequest())) {
 			// respond to the request
 			conn->context = responder->respond(conn->connection);
-
-			// if no ResponderContext was returned,
-			// delete the connection
-			if(conn->context == NULL) {
-				delete conn->connection;
-				conn->connection = NULL;
-			}
-
 			break;
 		}
 	}
@@ -201,27 +193,19 @@ Server::cycle()
 		ServerConnection *sconn = &(m_connections[i]);
 		HttpConnection *conn = sconn->connection;
 
-		// remove null elements (representing connections that
-		// were deleted) from the vector
-		if(conn == NULL) {
-			if(sconn->context != NULL)
-				delete sconn->context;
-			m_connections.erase(m_connections.begin() + (i--));
-			continue;
-		}
+		HttpConnectionState state = conn->getState();
+		bool done = (state == HTTP_CONNECTION_STATE_DONE) ||
+		            (state == HTTP_CONNECTION_STATE_SENDING_RESPONSE &&
+		             conn->getMillisecondsSinceLastRead() > 10000);
 
-		// remove connections that haven't had any activity in
-		// 10 seconds and haven't reached the responding state
-		if(conn->getState() != HTTP_CONNECTION_STATE_SENDING_RESPONSE &&
-		   conn->getMillisecondsSinceLastRead() > 10000) {
+		// remove connections in the done state or continue
+		// responses for ones that have associated contexts
+		if(done) {
 			delete conn;
 			if(sconn->context != NULL)
 				delete sconn->context;
 			m_connections.erase(m_connections.begin() + (i--));
-			continue;
-		}
-
-		if(sconn->context != NULL) {
+		} else if(sconn->context != NULL) {
 			long wakeupTime = sconn->context->getWakeupTime();
 			if(wakeupTime <= currentTime) {
 				// continue the context's response; it may return
@@ -273,14 +257,9 @@ Server::cycle()
 			switch(conn->getState()) {
 				default:
 					break;
-				case HTTP_CONNECTION_STATE_SENDING_RESPONSE:
+				case HTTP_CONNECTION_STATE_RECEIVED_REQUEST:
 					// full request received
 					processRequest(&m_connections[i]);
-					break;
-				case HTTP_CONNECTION_STATE_DONE:
-					// remote host closed the connection
-					delete conn;
-					m_connections[i].connection = NULL;
 					break;
 			}
 		}

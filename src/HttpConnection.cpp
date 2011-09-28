@@ -64,6 +64,8 @@ HttpConnection::closed()
 void
 HttpConnection::beginResponse(int responseCode, const char *responseDesc)
 {
+	m_state = HTTP_CONNECTION_STATE_SENDING_RESPONSE;
+
 	sendString("HTTP/1.1 ");
 	sendString(String::fromInt(responseCode));
 	sendString(" ");
@@ -197,7 +199,7 @@ HttpConnection::lineRead(const string &line)
 					m_contentLength = String::toUInt(m_request.getHeaderValue("Content-Length"));
 					postDataRead(m_line);
 				} else {
-					m_state = HTTP_CONNECTION_STATE_SENDING_RESPONSE;
+					m_state = HTTP_CONNECTION_STATE_RECEIVED_REQUEST;
 				}
 			} else {
 				if(m_request.parseHeaderLine(line) == false)
