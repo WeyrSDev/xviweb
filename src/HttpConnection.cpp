@@ -150,7 +150,7 @@ HttpConnection::postDataRead(const string &s)
 		if(m_request.parsePostData(m_postData) == false)
 			sendBadRequestResponse();
 		else
-			m_state = HTTP_CONNECTION_STATE_SENDING_RESPONSE;
+			m_state = HTTP_CONNECTION_STATE_RECEIVED_REQUEST;
 	} else if(m_postData.length() > m_contentLength) {
 		sendBadRequestResponse();
 	}
