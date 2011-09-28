@@ -195,7 +195,7 @@ Server::cycle()
 
 		HttpConnectionState state = conn->getState();
 		bool done = (state == HTTP_CONNECTION_STATE_DONE) ||
-		            (state == HTTP_CONNECTION_STATE_SENDING_RESPONSE &&
+		            (state != HTTP_CONNECTION_STATE_SENDING_RESPONSE &&
 		             conn->getMillisecondsSinceLastRead() > 10000);
 
 		// remove connections in the done state or continue
