@@ -27,7 +27,7 @@
 #define __HTTPCONNECTION_H__
 
 #include "Connection.h"
-#include "HttpRequest.h"
+#include "HttpRequestImpl.h"
 
 enum HttpConnectionState
 {
@@ -43,7 +43,7 @@ class HttpConnection : public Connection
 {
 	private:
 		HttpConnectionState m_state;
-		HttpRequest m_request;
+		HttpRequestImpl m_request;
 		unsigned int m_bytesRead;
 		unsigned int m_contentLength;
 		std::string m_postData;

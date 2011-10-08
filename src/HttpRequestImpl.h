@@ -23,21 +23,39 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __HTTPREQUEST_H__
-#define __HTTPREQUEST_H__
+#ifndef __HTTPREQUESTIMPL_H__
+#define __HTTPREQUESTIMPL_H__
 
-#include <string>
+#include <map>
+#include "HttpRequest.h"
 
-class HttpRequest
+typedef std::map<std::string, std::string> HttpRequestMap;
+
+class HttpRequestImpl : public HttpRequest
 {
+	private:
+		std::string m_verb;
+		std::string m_path;
+		std::string m_physicalPath;
+		std::string m_version;
+
+		HttpRequestMap m_queryStringMap;
+		HttpRequestMap m_headerMap;
+		HttpRequestMap m_postDataMap;
+
 	public:
-		virtual std::string getVerb() const = 0;
-		virtual std::string getPath() const = 0;
-		virtual std::string getPhysicalPath() const = 0;
-		virtual std::string getVersion() const = 0;
-		virtual std::string getQueryStringValue(const std::string &name) const = 0;
-		virtual std::string getHeaderValue(const std::string &name) const = 0;
-		virtual std::string getPostDataValue(const std::string &name) const = 0;
+		std::string getVerb() const;
+		std::string getPath() const;
+		std::string getPhysicalPath() const;
+		std::string getVersion() const;
+		std::string getQueryStringValue(const std::string &name) const;
+		std::string getHeaderValue(const std::string &name) const;
+		std::string getPostDataValue(const std::string &name) const;
+
+		bool parseRequestLine(const std::string &line);
+		bool parseHeaderLine(const std::string &line);
+		bool parsePostData(const std::string &line);
+		bool setPhysicalPathRoot(const std::string &root);
 };
 
-#endif /* __HTTPREQUEST_H__ */
+#endif /* __HTTPREQUESTIMPL_H__ */

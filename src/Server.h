@@ -60,7 +60,6 @@ class Server
 		unsigned short getPort() const;
 
 		void attachResponder(Responder *responder);
-		void attachResponderContext(ResponderContext *context);
 
 		void cycle();
 };
