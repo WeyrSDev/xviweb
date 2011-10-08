@@ -24,45 +24,51 @@
  */
 
 #include <iostream>
-#include "HttpRequest.h"
+#include "HttpRequestImpl.h"
 #include "String.h"
 
 using namespace std;
 
 string
-HttpRequest::getVerb() const
+HttpRequestImpl::getVerb() const
 {
 	return m_verb;
 }
 
 string
-HttpRequest::getPath() const
+HttpRequestImpl::getPath() const
 {
 	return m_path;
 }
 
 string
-HttpRequest::getVersion() const
+HttpRequestImpl::getPhysicalPath() const
+{
+	return m_physicalPath;
+}
+
+string
+HttpRequestImpl::getVersion() const
 {
 	return m_version;
 }
 
 string
-HttpRequest::getQueryStringValue(const string &name) const
+HttpRequestImpl::getQueryStringValue(const string &name) const
 {
 	HttpRequestMap::const_iterator iter = m_queryStringMap.find(String::toLower(name));
 	return (iter != m_queryStringMap.end()) ? iter->second : string("");
 }
 
 string
-HttpRequest::getHeaderValue(const string &name) const
+HttpRequestImpl::getHeaderValue(const string &name) const
 {
 	HttpRequestMap::const_iterator iter = m_headerMap.find(String::toLower(name));
 	return (iter != m_headerMap.end()) ? iter->second : string("");
 }
 
 string
-HttpRequest::getPostDataValue(const string &name) const
+HttpRequestImpl::getPostDataValue(const string &name) const
 {
 	HttpRequestMap::const_iterator iter = m_postDataMap.find(String::toLower(name));
 	return (iter != m_postDataMap.end()) ? iter->second : string("");
@@ -94,7 +100,7 @@ parseKeyValueList(HttpRequestMap &map, const string &list)
 }
 
 bool
-HttpRequest::parseRequestLine(const string &line)
+HttpRequestImpl::parseRequestLine(const string &line)
 {
 	// parse the verb
 	size_t end = line.find(' ');
@@ -128,7 +134,7 @@ HttpRequest::parseRequestLine(const string &line)
 }
 
 bool
-HttpRequest::parseHeaderLine(const string &line)
+HttpRequestImpl::parseHeaderLine(const string &line)
 {
 	// parse the name
 	size_t end = line.find(':');
@@ -147,8 +153,51 @@ HttpRequest::parseHeaderLine(const string &line)
 }
 
 bool
-HttpRequest::parsePostData(const string &line)
+HttpRequestImpl::parsePostData(const string &line)
 {
 	parseKeyValueList(m_postDataMap, line);
+	return true;
+}
+
+bool
+HttpRequestImpl::setPhysicalPathRoot(const string &root)
+{
+	// not confident that the commented out code below
+	// works right yet, so just return an empty string
+	// if the requested path contains a ..
+	if(m_path.find("..") != string::npos) {
+		m_physicalPath = string("");
+		return false;
+	}
+
+	string newPath = m_path;
+
+	// replace back slashes with forward slashes
+	size_t tmp;
+	while((tmp = newPath.find('\\')) != string::npos)
+		newPath[tmp] = '/';
+
+	// replace double slashes with single slashes
+	while((tmp = newPath.find("//")) != string::npos)
+		newPath.erase(tmp, 1);
+
+#if 0
+	// make sure .. isn't used to go above the root directory
+	int depth = 0;
+	for(int i = 0; i < (int)newPath.length() - 3; ++i) {
+		if(newPath[i] == '/') {
+			if(newPath[i+1] == '.' && newPath[i+2] == '.' && newPath[i+3] == '/') {
+				if(--depth < 0)
+					return string("");
+				i += 3;
+			} else {
+				++depth;
+			}
+		}
+	}
+#endif
+
+	m_path = newPath;
+	m_physicalPath = root + newPath;
 	return true;
 }
