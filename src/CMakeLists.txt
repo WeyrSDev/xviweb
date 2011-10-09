@@ -4,6 +4,7 @@ set(SRCS
 	FileResponder.cpp
 	HttpConnection.cpp
 	HttpRequestImpl.cpp
+	HttpResponseImpl.cpp
 	Responder.cpp
 	Server.cpp
 	String.cpp

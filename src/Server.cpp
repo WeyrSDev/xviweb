@@ -35,9 +35,11 @@
 using namespace std;
 
 ServerConnection::ServerConnection(HttpConnection *connectionValue,
+                                   HttpResponseImpl *responseValue,
                                    ResponderContext *contextValue)
 {
 	connection = connectionValue;
+	response = responseValue;
 	context = contextValue;
 }
 
@@ -101,10 +103,12 @@ Server::~Server()
 	for(unsigned int i = 0; i < m_responders.size(); ++i)
 		delete m_responders[i];
 
-	// delete all HttpConnections and ResponderContexts
+	// delete all connection data
 	for(unsigned int i = 0; i < m_connections.size(); ++i) {
 		if(m_connections[i].context != NULL)
 			delete m_connections[i].context;
+		if(m_connections[i].response != NULL)
+			delete m_connections[i].response;
 		if(m_connections[i].connection != NULL)
 			delete m_connections[i].connection;
 	}
@@ -170,13 +174,16 @@ Server::acceptHttpConnection()
 void
 Server::processRequest(ServerConnection *conn)
 {
+	// create HttpResponse for the connection
+	conn->response = new HttpResponseImpl(conn->connection);
+
 	// loop through responders and stop when
 	// one matches the request
 	for(unsigned int i = 0; i < m_responders.size(); ++i) {
 		Responder *responder = m_responders[i];
 		if(responder->matchesRequest(conn->connection->getRequest())) {
 			// respond to the request
-			conn->context = responder->respond(conn->connection);
+			conn->context = responder->respond(conn->connection->getRequest(), conn->response);
 			break;
 		}
 	}
@@ -202,6 +209,8 @@ Server::cycle()
 		// responses for ones that have associated contexts
 		if(done) {
 			delete conn;
+			if(sconn->response != NULL)
+				delete sconn->response;
 			if(sconn->context != NULL)
 				delete sconn->context;
 			m_connections.erase(m_connections.begin() + (i--));
@@ -211,7 +220,7 @@ Server::cycle()
 				// continue the context's response; it may return
 				// a pointer to itself, a pointer to a new context,
 				// or null if it's done
-				sconn->context = sconn->context->continueResponse(conn);
+				sconn->context = sconn->context->continueResponse(conn->getRequest(), sconn->response);
 			} else {
 				long timeDiff = wakeupTime - currentTime;
 				if(timeDiff < sleepTime)

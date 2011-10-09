@@ -49,10 +49,10 @@ HttpConnection::getState() const
 	return m_state;
 }
 
-const HttpRequest &
+const HttpRequestImpl *
 HttpConnection::getRequest() const
 {
-	return m_request;
+	return &m_request;
 }
 
 void
@@ -62,20 +62,9 @@ HttpConnection::closed()
 }
 
 void
-HttpConnection::beginResponse(int responseCode, const char *responseDesc)
+HttpConnection::beginResponse()
 {
 	m_state = HTTP_CONNECTION_STATE_SENDING_RESPONSE;
-
-	sendString("HTTP/1.1 ");
-	sendString(String::fromInt(responseCode));
-	sendString(" ");
-	sendLine(responseDesc);
-
-#ifdef PROJECT_VERSION
-	sendLine("Server: xviweb/" PROJECT_VERSION);
-#else
-	sendLine("Server: xviweb");
-#endif
 }
 
 void
@@ -85,59 +74,17 @@ HttpConnection::endResponse()
 }
 
 void
-HttpConnection::sendResponse(int responseCode, const char *responseDesc,
-                             const char *contentType, const char *content)
-{
-	beginResponse(responseCode, responseDesc);
-
-	// send Content-Type header
-	sendString("Content-Type: ");
-	sendLine(contentType);
-
-	// send Content-Length header
-	sendString("Content-Length: ");
-	sendLine(String::fromUInt(strlen(content)));
-
-	// send content
-	sendLine("");
-	if(m_request.getVerb() != "HEAD")
-		sendLine(content);
-
-	endResponse();
-}
-
-void
-HttpConnection::sendErrorResponse(int errorCode, const char *errorDesc,
-                                  const char *errorMessage)
-{
-	string code = String::fromInt(errorCode);
-
-	string response = string() +
-		"<!DOCTYPE html>\r\n"
-		"<html lang=\"en\">\r\n"
-		"<head>\r\n"
-		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\r\n"
-		"<title>" + code + " " + errorDesc + "</title>\r\n"
-		"<style type=\"text/css\">\r\n"
-		"body { margin: 0; background-color: white; color: black; font-family: Arial, Helvetica, sans-serif; }\r\n"
-		"h1 { margin: 0; padding: 0.5em; background-color: #dedede; color: inherit; text-shadow: gray 1px 1px 4px; }\r\n"
-		"p { margin: 0.5em; }\r\n"
-		"</style>\r\n"
-		"</head>\r\n"
-		"<body>\r\n\r\n"
-		"<h1>" + errorDesc + "</h1>\r\n"
-		"<p>" + errorMessage + "</p>\r\n\r\n"
-		"</body>\r\n"
-		"</html>\r\n";
-
-	sendResponse(errorCode, errorDesc, "text/html", response.c_str());
-}
-
-void
 HttpConnection::sendBadRequestResponse()
 {
-	cerr << toString() << ": Bad request" << endl;
-	sendErrorResponse(400, "Bad Request", "Your request could not be understood.");
+	sendString("HTTP/1.1 400 Bad Request\r\n");
+	sendString("Content-Type: text/plain\r\n");
+
+	string message = "Your request could not be understood.";
+	sendString("Content-Length: " + String::fromInt(message.length()) + "\r\n");
+	sendString("\r\n" + message + "\r\n");
+
+	cout << toString() << ": Bad request" << endl;
+	endResponse();
 }
 
 void

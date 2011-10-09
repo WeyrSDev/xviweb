@@ -29,14 +29,16 @@
 #include <vector>
 #include "HttpConnection.h"
 #include "Responder.h"
+#include "HttpResponseImpl.h"
 
 class ServerConnection
 {
 	public:
 		HttpConnection *connection;
+		HttpResponseImpl *response;
 		ResponderContext *context;
 
-		ServerConnection(HttpConnection *connectionValue, ResponderContext *contextValue = NULL);
+		ServerConnection(HttpConnection *connectionValue, HttpResponseImpl *responseValue = NULL, ResponderContext *contextValue = NULL);
 };
 
 class Server

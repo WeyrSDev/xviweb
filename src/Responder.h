@@ -26,7 +26,8 @@
 #ifndef __RESPONDER_H__
 #define __RESPONDER_H__
 
-#include "HttpConnection.h"
+#include "HttpRequest.h"
+#include "HttpResponse.h"
 
 class ResponderContext
 {
@@ -42,7 +43,7 @@ class ResponderContext
 
 		long getWakeupTime() const;
 
-		virtual ResponderContext *continueResponse(HttpConnection *conn) = 0;
+		virtual ResponderContext *continueResponse(const HttpRequest *request, HttpResponse *response) = 0;
 };
 
 class Responder
@@ -51,8 +52,8 @@ class Responder
 		Responder();
 		virtual ~Responder();
 
-		virtual bool matchesRequest(const HttpRequest &request) const = 0;
-		virtual ResponderContext *respond(HttpConnection *conn) = 0;
+		virtual bool matchesRequest(const HttpRequest *request) const = 0;
+		virtual ResponderContext *respond(const HttpRequest *request, HttpResponse *response) = 0;
 };
 
 #endif /* __RESPONDER_H__ */

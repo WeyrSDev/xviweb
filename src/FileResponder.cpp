@@ -121,19 +121,19 @@ mapPath(const string &path)
 }
 
 bool
-FileResponder::matchesRequest(const HttpRequest &/*request*/) const
+FileResponder::matchesRequest(const HttpRequest * /*request*/) const
 {
 	return true;
 }
 
 ResponderContext *
-FileResponder::respond(HttpConnection *conn)
+FileResponder::respond(const HttpRequest *request, HttpResponse *response)
 {
 	// if the path returned by mapPath has a length
 	// of zero, the path requested is invalid
-	string path = mapPath(conn->getRequest().getPath());
+	string path = mapPath(request->getPath());
 	if(path.length() == 0) {
-		conn->sendErrorResponse(403, "Forbidden", "The provided file path is invalid.");
+		response->sendErrorResponse(403, "Forbidden", "The provided file path is invalid.");
 		return NULL;
 	}
 
@@ -145,14 +145,14 @@ FileResponder::respond(HttpConnection *conn)
 	if(fd == -1 || fstat(fd, &status) == -1) {
 		if(fd != -1)
 			close(fd);
-		conn->sendErrorResponse(404, "File Not Found", "The file that you requested does not exist.");
+		response->sendErrorResponse(404, "File Not Found", "The file that you requested does not exist.");
 		return NULL;
 	}
 
 	// don't show directory listings
 	if(S_ISDIR(status.st_mode)) {
 		close(fd);
-		conn->sendErrorResponse(403, "Forbidden", "You do not have access to directory listings.");
+		response->sendErrorResponse(403, "Forbidden", "You do not have access to directory listings.");
 		return NULL;
 	}
 
@@ -162,26 +162,23 @@ FileResponder::respond(HttpConnection *conn)
 	string contentType = getMimeTypeForFile(path);
 	if(contentType.length() == 0) {
 		close(fd);
-		conn->sendErrorResponse(403, "Forbidden", "You do not have access to files of this type.");
+		response->sendErrorResponse(403, "Forbidden", "You do not have access to files of this type.");
 		return NULL;
 	}
 
-	conn->beginResponse(200, "OK");
-	conn->sendLine(string("Content-Type: ") + contentType);
+	response->setStatus(200, "OK");
+	response->setContentType(contentType);
+	response->setContentLength((int)status.st_size);
 
-	// send the file's size to the client
-	conn->sendString("Content-Length: ");
-	conn->sendLine(String::fromInt((int)status.st_size));
-	conn->sendLine("");
-
-	if(conn->getRequest().getVerb() != "HEAD") {
+	if(request->getVerb() != "HEAD") {
 		// read the file and send it to the client
 		char buf[512];
 		ssize_t length;
 		while((length = read(fd, buf, sizeof(buf))) > 0)
-			conn->sendString(buf, length);
-		conn->endResponse();
+			response->sendString(buf, length);
 	}
+
+	response->endResponse();
 
 	close(fd);
 	return NULL;

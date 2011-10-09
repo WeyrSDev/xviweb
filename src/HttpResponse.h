@@ -23,33 +23,37 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __FILERESPONDER_H__
-#define __FILERESPONDER_H__
+#ifndef __HTTPRESPONSE_H__
+#define __HTTPRESPONSE_H__
 
 #include <string>
-#include <vector>
-#include "Responder.h"
 
-class FileResponder : public Responder
+class HttpResponse
 {
-	private:
-		std::string m_rootDirectory;
-
-		std::vector <std::string> m_mimeTypes;
-		std::vector <std::string> m_mimeFileExtensions;
-
 	public:
-		FileResponder();
-		virtual ~FileResponder();
+		virtual int getStatusCode() const = 0;
+		virtual std::string getStatusMessage() const = 0;
+		virtual void setStatus(int statusCode, const std::string &statusMessage) = 0;
 
-		void setRootDirectory(const std::string &dir);
-		std::string getRootDirectory() const;
+		virtual std::string getContentType() const = 0;
+		virtual void setContentType(const std::string &contentType) = 0;
 
-		void addMimeType(const std::string &type, const std::string &fileExtension);
-		std::string getMimeTypeForFile(const std::string &path) const;
+		virtual int getContentLength() const = 0;
+		virtual void setContentLength(int contentLength) = 0;
 
-		bool matchesRequest(const HttpRequest *request) const;
-		ResponderContext *respond(const HttpRequest *request, HttpResponse *response);
+		virtual std::string getHeaderValue(const std::string &headerName) const = 0;
+		virtual void setHeaderValue(const std::string &headerName, const std::string &headerValue) = 0;
+
+		virtual void sendString(const char *s, size_t length) = 0;
+		virtual void sendString(const char *s) = 0;
+		virtual void sendString(const std::string &s) = 0;
+		virtual void sendLine(const char *line) = 0;
+		virtual void sendLine(const std::string &line) = 0;
+
+		virtual void sendResponse(int statusCode, const char *statusMessage, const char *contentType, const char *content) = 0;
+		virtual void sendErrorResponse(int errorCode, const char *errorDesc, const char *errorMessage) = 0;
+
+		virtual void endResponse() = 0;
 };
 
-#endif /* __FILERESPONDER_H__ */
+#endif /* __HTTPRESPONSE_H__ */

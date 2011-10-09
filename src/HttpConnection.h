@@ -53,9 +53,9 @@ class HttpConnection : public Connection
 		virtual ~HttpConnection();
 
 		HttpConnectionState getState() const;
-		const HttpRequest &getRequest() const;
+		const HttpRequestImpl *getRequest() const;
 
-		void beginResponse(int responseCode, const char *responseDesc);
+		void beginResponse();
 		void endResponse();
 		void sendResponse(int responseCode, const char *responseDesc, const char *contentType, const char *content);
 		void sendErrorResponse(int errorCode, const char *errorDesc, const char *errorMessage);

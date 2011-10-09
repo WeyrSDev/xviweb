@@ -23,33 +23,54 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __FILERESPONDER_H__
-#define __FILERESPONDER_H__
+#ifndef __HTTPRESPONSEIMPL_H__
+#define __HTTPRESPONSEIMPL_H__
 
-#include <string>
-#include <vector>
-#include "Responder.h"
+#include <map>
+#include "HttpResponse.h"
+#include "HttpConnection.h"
 
-class FileResponder : public Responder
+typedef std::map<std::string, std::string> HttpResponseMap;
+
+class HttpResponseImpl : public HttpResponse
 {
 	private:
-		std::string m_rootDirectory;
+		HttpConnection *m_conn;
+		bool m_responding;
 
-		std::vector <std::string> m_mimeTypes;
-		std::vector <std::string> m_mimeFileExtensions;
+		int m_statusCode;
+		std::string m_statusMessage;
+
+		HttpResponseMap m_headerMap;
+
+		void beginResponse();
 
 	public:
-		FileResponder();
-		virtual ~FileResponder();
+		HttpResponseImpl(HttpConnection *conn);
 
-		void setRootDirectory(const std::string &dir);
-		std::string getRootDirectory() const;
+		int getStatusCode() const;
+		std::string getStatusMessage() const;
+		void setStatus(int statusCode, const std::string &statusMessage);
 
-		void addMimeType(const std::string &type, const std::string &fileExtension);
-		std::string getMimeTypeForFile(const std::string &path) const;
+		std::string getContentType() const;
+		void setContentType(const std::string &contentType);
 
-		bool matchesRequest(const HttpRequest *request) const;
-		ResponderContext *respond(const HttpRequest *request, HttpResponse *response);
+		int getContentLength() const;
+		void setContentLength(int contentLength);
+
+		std::string getHeaderValue(const std::string &headerName) const;
+		void setHeaderValue(const std::string &headerName, const std::string &headerValue);
+
+		void sendString(const char *s, size_t length);
+		void sendString(const char *s);
+		void sendString(const std::string &s);
+		void sendLine(const char *line);
+		void sendLine(const std::string &line);
+
+		void sendResponse(int statusCode, const char *statusMessage, const char *contentType, const char *content);
+		void sendErrorResponse(int errorCode, const char *errorDesc, const char *errorMessage);
+
+		void endResponse();
 };
 
-#endif /* __FILERESPONDER_H__ */
+#endif /* __HTTPRESPONSEIMPL_H__ */
