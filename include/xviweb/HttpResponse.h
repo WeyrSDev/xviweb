@@ -23,21 +23,37 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __HTTPREQUEST_H__
-#define __HTTPREQUEST_H__
+#ifndef __XVIWEB_HTTPRESPONSE_H__
+#define __XVIWEB_HTTPRESPONSE_H__
 
 #include <string>
 
-class HttpRequest
+class HttpResponse
 {
 	public:
-		virtual std::string getVerb() const = 0;
-		virtual std::string getPath() const = 0;
-		virtual std::string getPhysicalPath() const = 0;
-		virtual std::string getVersion() const = 0;
-		virtual std::string getQueryStringValue(const std::string &name) const = 0;
-		virtual std::string getHeaderValue(const std::string &name) const = 0;
-		virtual std::string getPostDataValue(const std::string &name) const = 0;
+		virtual int getStatusCode() const = 0;
+		virtual std::string getStatusMessage() const = 0;
+		virtual void setStatus(int statusCode, const std::string &statusMessage) = 0;
+
+		virtual std::string getContentType() const = 0;
+		virtual void setContentType(const std::string &contentType) = 0;
+
+		virtual int getContentLength() const = 0;
+		virtual void setContentLength(int contentLength) = 0;
+
+		virtual std::string getHeaderValue(const std::string &headerName) const = 0;
+		virtual void setHeaderValue(const std::string &headerName, const std::string &headerValue) = 0;
+
+		virtual void sendString(const char *s, size_t length) = 0;
+		virtual void sendString(const char *s) = 0;
+		virtual void sendString(const std::string &s) = 0;
+		virtual void sendLine(const char *line) = 0;
+		virtual void sendLine(const std::string &line) = 0;
+
+		virtual void sendResponse(int statusCode, const char *statusMessage, const char *contentType, const char *content) = 0;
+		virtual void sendErrorResponse(int errorCode, const char *errorDesc, const char *errorMessage) = 0;
+
+		virtual void endResponse() = 0;
 };
 
-#endif /* __HTTPREQUEST_H__ */
+#endif /* __XVIWEB_HTTPRESPONSE_H__ */

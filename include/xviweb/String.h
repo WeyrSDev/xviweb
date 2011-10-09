@@ -23,37 +23,32 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __HTTPRESPONSE_H__
-#define __HTTPRESPONSE_H__
+#ifndef __XVIWEB_STRING_H__
+#define __XVIWEB_STRING_H__
 
 #include <string>
+#include <vector>
 
-class HttpResponse
+class String
 {
 	public:
-		virtual int getStatusCode() const = 0;
-		virtual std::string getStatusMessage() const = 0;
-		virtual void setStatus(int statusCode, const std::string &statusMessage) = 0;
-
-		virtual std::string getContentType() const = 0;
-		virtual void setContentType(const std::string &contentType) = 0;
-
-		virtual int getContentLength() const = 0;
-		virtual void setContentLength(int contentLength) = 0;
-
-		virtual std::string getHeaderValue(const std::string &headerName) const = 0;
-		virtual void setHeaderValue(const std::string &headerName, const std::string &headerValue) = 0;
-
-		virtual void sendString(const char *s, size_t length) = 0;
-		virtual void sendString(const char *s) = 0;
-		virtual void sendString(const std::string &s) = 0;
-		virtual void sendLine(const char *line) = 0;
-		virtual void sendLine(const std::string &line) = 0;
-
-		virtual void sendResponse(int statusCode, const char *statusMessage, const char *contentType, const char *content) = 0;
-		virtual void sendErrorResponse(int errorCode, const char *errorDesc, const char *errorMessage) = 0;
-
-		virtual void endResponse() = 0;
+		static std::string fromInt(int n);
+		static std::string fromUInt(unsigned int n);
+		static std::string hexFromUInt(unsigned int n);
+		static int toInt(const std::string &s);
+		static unsigned int toUInt(const std::string &s);
+		static unsigned int hexToUInt(const std::string &s, size_t index, size_t length);
+		static unsigned int hexToUInt(const std::string &s, size_t index);
+		static unsigned int hexToUInt(const std::string &s);
+		static std::string toLower(const std::string &s);
+		static std::string toUpper(const std::string &s);
+		static bool isWhitespace(char c);
+		static std::string trim(const std::string &s);
+		static std::string htmlEncode(const std::string &s);
+		static std::string urlDecode(const std::string &s);
+		static bool endsWith(const std::string &s1, const std::string &s2, bool ignoreCase);
+		static bool endsWith(const std::string &s1, const std::string &s2);
+		static std::vector <std::string> split(const std::string &s, const std::string &delimiter);
 };
 
-#endif /* __HTTPRESPONSE_H__ */
+#endif /* __XVIWEB_STRING_H__ */

@@ -23,32 +23,21 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __STRING_H__
-#define __STRING_H__
+#ifndef __XVIWEB_HTTPREQUEST_H__
+#define __XVIWEB_HTTPREQUEST_H__
 
 #include <string>
-#include <vector>
 
-class String
+class HttpRequest
 {
 	public:
-		static std::string fromInt(int n);
-		static std::string fromUInt(unsigned int n);
-		static std::string hexFromUInt(unsigned int n);
-		static int toInt(const std::string &s);
-		static unsigned int toUInt(const std::string &s);
-		static unsigned int hexToUInt(const std::string &s, size_t index, size_t length);
-		static unsigned int hexToUInt(const std::string &s, size_t index);
-		static unsigned int hexToUInt(const std::string &s);
-		static std::string toLower(const std::string &s);
-		static std::string toUpper(const std::string &s);
-		static bool isWhitespace(char c);
-		static std::string trim(const std::string &s);
-		static std::string htmlEncode(const std::string &s);
-		static std::string urlDecode(const std::string &s);
-		static bool endsWith(const std::string &s1, const std::string &s2, bool ignoreCase);
-		static bool endsWith(const std::string &s1, const std::string &s2);
-		static std::vector <std::string> split(const std::string &s, const std::string &delimiter);
+		virtual std::string getVerb() const = 0;
+		virtual std::string getPath() const = 0;
+		virtual std::string getPhysicalPath() const = 0;
+		virtual std::string getVersion() const = 0;
+		virtual std::string getQueryStringValue(const std::string &name) const = 0;
+		virtual std::string getHeaderValue(const std::string &name) const = 0;
+		virtual std::string getPostDataValue(const std::string &name) const = 0;
 };
 
-#endif /* __STRING_H__ */
+#endif /* __XVIWEB_HTTPREQUEST_H__ */
