@@ -37,6 +37,7 @@ class ServerConnection
 		HttpConnection *connection;
 		HttpResponseImpl *response;
 		ResponderContext *context;
+		long wakeupTime;
 
 		ServerConnection(HttpConnection *connectionValue, HttpResponseImpl *responseValue = NULL, ResponderContext *contextValue = NULL);
 };

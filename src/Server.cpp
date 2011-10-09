@@ -41,6 +41,7 @@ ServerConnection::ServerConnection(HttpConnection *connectionValue,
 	connection = connectionValue;
 	response = responseValue;
 	context = contextValue;
+	wakeupTime = 0;
 }
 
 Server::Server(const Address &address, unsigned short port)
@@ -184,6 +185,8 @@ Server::processRequest(ServerConnection *conn)
 		if(responder->matchesRequest(conn->connection->getRequest())) {
 			// respond to the request
 			conn->context = responder->respond(conn->connection->getRequest(), conn->response);
+			if(conn->context != NULL)
+				conn->wakeupTime = getMilliseconds() + conn->context->getResponseInterval();
 			break;
 		}
 	}
@@ -215,14 +218,15 @@ Server::cycle()
 				delete sconn->context;
 			m_connections.erase(m_connections.begin() + (i--));
 		} else if(sconn->context != NULL) {
-			long wakeupTime = sconn->context->getWakeupTime();
-			if(wakeupTime <= currentTime) {
+			if(sconn->wakeupTime <= currentTime) {
 				// continue the context's response; it may return
 				// a pointer to itself, a pointer to a new context,
 				// or null if it's done
 				sconn->context = sconn->context->continueResponse(conn->getRequest(), sconn->response);
+				if(sconn->context != NULL)
+					sconn->wakeupTime = currentTime + sconn->context->getResponseInterval();
 			} else {
-				long timeDiff = wakeupTime - currentTime;
+				long timeDiff = sconn->wakeupTime - currentTime;
 				if(timeDiff < sleepTime)
 					sleepTime = timeDiff;
 			}

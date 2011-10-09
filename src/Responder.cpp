@@ -28,23 +28,16 @@
 
 ResponderContext::ResponderContext()
 {
-	m_wakeupTime = 0;
 }
 
 ResponderContext::~ResponderContext()
 {
 }
 
-void
-ResponderContext::sleep(long milliseconds)
-{
-	m_wakeupTime = getMilliseconds() + milliseconds;
-}
-
 long
-ResponderContext::getWakeupTime() const
+ResponderContext::getResponseInterval() const
 {
-	return m_wakeupTime;
+	return 50;
 }
 
 Responder::Responder()

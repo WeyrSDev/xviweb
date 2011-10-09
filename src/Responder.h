@@ -31,19 +31,12 @@
 
 class ResponderContext
 {
-	private:
-		long m_wakeupTime;
-
-	protected:
-		void sleep(long milliseconds);
-
 	public:
 		ResponderContext();
 		virtual ~ResponderContext();
 
-		long getWakeupTime() const;
-
 		virtual ResponderContext *continueResponse(const HttpRequest *request, HttpResponse *response) = 0;
+		virtual long getResponseInterval() const;
 };
 
 class Responder
