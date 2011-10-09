@@ -24,8 +24,8 @@
  */
 
 #include <iostream>
+#include <xviweb/String.h>
 #include "HttpRequestImpl.h"
-#include "String.h"
 
 using namespace std;
 

@@ -24,7 +24,7 @@
  */
 
 #include <sstream>
-#include "String.h"
+#include <xviweb/String.h>
 
 using namespace std;
 

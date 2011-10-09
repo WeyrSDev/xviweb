@@ -26,8 +26,8 @@
 #ifndef __RESPONDER_H__
 #define __RESPONDER_H__
 
-#include "HttpRequest.h"
-#include "HttpResponse.h"
+#include <xviweb/HttpRequest.h>
+#include <xviweb/HttpResponse.h>
 
 class ResponderContext
 {

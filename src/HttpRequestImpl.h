@@ -27,7 +27,7 @@
 #define __HTTPREQUESTIMPL_H__
 
 #include <map>
-#include "HttpRequest.h"
+#include <xviweb/HttpRequest.h>
 
 typedef std::map<std::string, std::string> HttpRequestMap;
 

@@ -25,8 +25,8 @@
 
 #include <iostream>
 #include <cstring>
+#include <xviweb/String.h>
 #include "HttpConnection.h"
-#include "String.h"
 
 using namespace std;
 

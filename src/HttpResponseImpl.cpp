@@ -24,8 +24,8 @@
  */
 
 #include <cstring>
+#include <xviweb/String.h>
 #include "HttpResponseImpl.h"
-#include "String.h"
 
 using namespace std;
 

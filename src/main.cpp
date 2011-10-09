@@ -27,7 +27,6 @@
 #include <iostream>
 #include "Server.h"
 #include "FileResponder.h"
-#include "String.h"
 
 #ifndef PROJECT_VERSION
 	#define PROJECT_VERSION ""

@@ -27,7 +27,7 @@
 #define __HTTPRESPONSEIMPL_H__
 
 #include <map>
-#include "HttpResponse.h"
+#include <xviweb/HttpResponse.h>
 #include "HttpConnection.h"
 
 typedef std::map<std::string, std::string> HttpResponseMap;

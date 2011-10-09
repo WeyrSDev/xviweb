@@ -26,8 +26,8 @@
 #include <iostream>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <xviweb/String.h>
 #include "FileResponder.h"
-#include "String.h"
 
 using namespace std;
 

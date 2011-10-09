@@ -27,8 +27,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <xviweb/String.h>
 #include "Connection.h"
-#include "String.h"
 #include "Util.h"
 
 using namespace std;

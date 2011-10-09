@@ -25,8 +25,8 @@
 
 #include <stdlib.h>
 #include <netdb.h>
+#include <xviweb/String.h>
 #include "Address.h"
-#include "String.h"
 
 using namespace std;
 
