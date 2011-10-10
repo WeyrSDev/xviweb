@@ -28,7 +28,7 @@
 
 #include <string>
 #include <vector>
-#include "Responder.h"
+#include <xviweb/Responder.h>
 
 class FileResponder : public Responder
 {

@@ -23,11 +23,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __RESPONDER_H__
-#define __RESPONDER_H__
+#ifndef __XVIWEB_RESPONDER_H__
+#define __XVIWEB_RESPONDER_H__
 
-#include <xviweb/HttpRequest.h>
-#include <xviweb/HttpResponse.h>
+#include "HttpRequest.h"
+#include "HttpResponse.h"
 
 class ResponderContext
 {
@@ -49,4 +49,4 @@ class Responder
 		virtual ResponderContext *respond(const HttpRequest *request, HttpResponse *response) = 0;
 };
 
-#endif /* __RESPONDER_H__ */
+#endif /* __XVIWEB_RESPONDER_H__ */

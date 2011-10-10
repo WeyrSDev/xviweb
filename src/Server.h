@@ -27,8 +27,8 @@
 #define __SERVER_H__
 
 #include <vector>
+#include <xviweb/Responder.h>
 #include "HttpConnection.h"
-#include "Responder.h"
 #include "HttpResponseImpl.h"
 
 class ServerConnection

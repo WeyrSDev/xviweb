@@ -23,7 +23,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Responder.h"
+#include <xviweb/Responder.h>
 #include "Util.h"
 
 ResponderContext::ResponderContext()
