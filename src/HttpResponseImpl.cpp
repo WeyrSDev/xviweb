@@ -180,13 +180,15 @@ HttpResponseImpl::sendErrorResponse(int errorCode, const char *errorDesc,
                                     const char *errorMessage)
 {
 	string code = String::fromInt(errorCode);
+	string htmlErrorDesc = String::htmlEncode(errorDesc);
+	string htmlErrorMessage = String::htmlEncode(errorMessage);
 
 	string response = string() +
 		"<!DOCTYPE html>\r\n"
 		"<html lang=\"en\">\r\n"
 		"<head>\r\n"
 		"<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\r\n"
-		"<title>" + code + " " + errorDesc + "</title>\r\n"
+		"<title>" + code + " " + htmlErrorDesc + "</title>\r\n"
 		"<style type=\"text/css\">\r\n"
 		"body { margin: 0; background-color: white; color: black; font-family: Arial, Helvetica, sans-serif; }\r\n"
 		"h1 { margin: 0; padding: 0.5em; background-color: #dedede; color: inherit; text-shadow: gray 1px 1px 4px; }\r\n"
@@ -194,8 +196,8 @@ HttpResponseImpl::sendErrorResponse(int errorCode, const char *errorDesc,
 		"</style>\r\n"
 		"</head>\r\n"
 		"<body>\r\n\r\n"
-		"<h1>" + errorDesc + "</h1>\r\n"
-		"<p>" + errorMessage + "</p>\r\n\r\n"
+		"<h1>" + htmlErrorDesc + "</h1>\r\n"
+		"<p>" + htmlErrorMessage + "</p>\r\n\r\n"
 		"</body>\r\n"
 		"</html>\r\n";
 
