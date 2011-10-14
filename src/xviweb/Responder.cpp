@@ -23,34 +23,34 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __XVIWEB_RESPONDER_H__
-#define __XVIWEB_RESPONDER_H__
+#include <xviweb/Responder.h>
+#include "Util.h"
 
-#include "HttpRequest.h"
-#include "HttpResponse.h"
+using namespace std;
 
-class ResponderContext
+ResponderContext::ResponderContext()
 {
-	public:
-		ResponderContext();
-		virtual ~ResponderContext();
+}
 
-		virtual ResponderContext *continueResponse(const HttpRequest *request, HttpResponse *response) = 0;
-		virtual long getResponseInterval() const;
-};
-
-class Responder
+ResponderContext::~ResponderContext()
 {
-	public:
-		Responder();
-		virtual ~Responder();
+}
 
-		virtual void addOption(const std::string &option, const std::string &value);
+long
+ResponderContext::getResponseInterval() const
+{
+	return 50;
+}
 
-		virtual bool matchesRequest(const HttpRequest *request) const = 0;
-		virtual ResponderContext *respond(const HttpRequest *request, HttpResponse *response) = 0;
-};
+Responder::Responder()
+{
+}
 
-#define XVIWEB_RESPONDER(CLASSNAME) extern "C" { const char *getResponderName() { return #CLASSNAME; } Responder *createResponder() { return new CLASSNAME(); } void destroyResponder(Responder *p) { delete p; } }
+Responder::~Responder()
+{
+}
 
-#endif /* __XVIWEB_RESPONDER_H__ */
+void
+Responder::addOption(const string & /*option*/, const string & /*value*/)
+{
+}

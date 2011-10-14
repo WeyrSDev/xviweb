@@ -25,8 +25,8 @@
 
 #include <csignal>
 #include <iostream>
+#include "ResponderModule.h"
 #include "Server.h"
-#include "FileResponder.h"
 
 #ifndef PROJECT_VERSION
 	#define PROJECT_VERSION ""
@@ -86,8 +86,6 @@ showUsageMessage(ostream &stream, const char *executableName)
 	stream << "Options:" << endl;
 	showOptionDescription(stream, "--address <address>", "Sets the address that the server binds to.\nThe default value is 127.0.0.1.");
 	showOptionDescription(stream, "--port <port>", "Sets the port that the server binds to.\nThe default value is 8080.");
-	showOptionDescription(stream, "--rootDirectory <path>", "Sets the root directory path to serve files from.");
-	showOptionDescription(stream, "--addMimeType <type> <file extension>", "Associates a MIME type with a file extension.");
 	showOptionDescription(stream, "--help", "Show this help message.");
 	showOptionDescription(stream, "--version", "Show version information.");
 }
@@ -97,7 +95,7 @@ main(int argc, char *argv[])
 {
 	const char *addressString = "127.0.0.1";
 	unsigned short port = 8080;
-	FileResponder *fileResponder = new FileResponder();
+	vector <ResponderModule *> modules;
 
 	// parse command line options
 	for(int i = 1; i < argc; ++i) {
@@ -127,17 +125,16 @@ main(int argc, char *argv[])
 			continue;
 		}
 
-		// set the root directory
-		if(strcmp(argv[i], "--rootDirectory") == 0) {
-			fileResponder->setRootDirectory(string(argv[++i]));
-			continue;
-		}
-
-		// add MIME type
-		if(strcmp(argv[i], "--addMimeType") == 0) {
-			string mimeType = argv[++i];
-			string mimeFileExtension = argv[++i];
-			fileResponder->addMimeType(mimeType, mimeFileExtension);
+		// load responder
+		if(strcmp(argv[i], "--loadResponder") == 0) {
+			const char *path = argv[++i];
+			try {
+				ResponderModule *module = new ResponderModule(path);
+				modules.push_back(module);
+				cout << "Loaded responder " << module->getResponderName() << " from " << path << endl;
+			} catch(const char *ex) {
+				cerr << "Error loading " << path << ": " << ex << endl;
+			}
 			continue;
 		}
 
@@ -155,12 +152,12 @@ main(int argc, char *argv[])
 		server = new Server(address, port);
 	} catch(const char *ex) {
 		cerr << "Error starting server: " << ex << endl;
-		delete fileResponder;
 		return 1;
 	}
 
 	// attach responders to the server
-	server->attachResponder(fileResponder);
+	for(unsigned int i = 0; i < modules.size(); ++i)
+		server->attachResponder(modules[i]->getResponder());
 
 	cout << "Listening for connections at " << address.toString() << " port " << port << endl;
 
@@ -174,6 +171,12 @@ main(int argc, char *argv[])
 
 	cout << endl << "Stopping server..." << endl;
 	delete server;
+
+	// delete responder modules
+	for(unsigned int i = 0; i < modules.size(); ++i) {
+		cout << "Unloading responder " << modules[i]->getResponderName() << "..." << endl;
+		delete modules[i];
+	}
 
 	cout << "Done" << endl;
 	return 0;

@@ -100,10 +100,6 @@ Server::~Server()
 	// close bound socket
 	close(m_fd);
 
-	// delete all responders
-	for(unsigned int i = 0; i < m_responders.size(); ++i)
-		delete m_responders[i];
-
 	// delete all connection data
 	for(unsigned int i = 0; i < m_connections.size(); ++i) {
 		if(m_connections[i].context != NULL)
@@ -180,7 +176,8 @@ Server::processRequest(ServerConnection *conn)
 
 	// loop through responders and stop when
 	// one matches the request
-	for(unsigned int i = 0; i < m_responders.size(); ++i) {
+	unsigned int i;
+	for(i = 0; i < m_responders.size(); ++i) {
 		Responder *responder = m_responders[i];
 		if(responder->matchesRequest(conn->connection->getRequest())) {
 			// respond to the request
@@ -190,6 +187,10 @@ Server::processRequest(ServerConnection *conn)
 			break;
 		}
 	}
+
+	// just end the response if no responders handled it
+	if(i == m_responders.size())
+		conn->response->endResponse();
 }
 
 void

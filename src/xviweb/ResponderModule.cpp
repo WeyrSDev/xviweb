@@ -23,34 +23,54 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __XVIWEB_RESPONDER_H__
-#define __XVIWEB_RESPONDER_H__
+#include <dlfcn.h>
+#include "ResponderModule.h"
 
-#include "HttpRequest.h"
-#include "HttpResponse.h"
-
-class ResponderContext
+ResponderModule::ResponderModule(const char *path)
 {
-	public:
-		ResponderContext();
-		virtual ~ResponderContext();
+	// open the module
+	m_handle = dlopen(path, RTLD_NOW);
+	if(!m_handle)
+		throw "dlopen failed";
 
-		virtual ResponderContext *continueResponse(const HttpRequest *request, HttpResponse *response) = 0;
-		virtual long getResponseInterval() const;
-};
+	// get getResponderName function pointer
+	m_getResponderName = (GET_RESPONDER_NAME_FN)dlsym(m_handle, "getResponderName");
+	if(!m_getResponderName) {
+		dlclose(m_handle);
+		throw "dlsym for getResponderName failed";
+	}
 
-class Responder
+	// get createResponder function pointer
+	m_createResponder = (CREATE_RESPONDER_FN)dlsym(m_handle, "createResponder");
+	if(!m_createResponder) {
+		dlclose(m_handle);
+		throw "dlsym for createResponder failed";
+	}
+
+	// get destroyResponder function pointer
+	m_destroyResponder = (DESTROY_RESPONDER_FN)dlsym(m_handle, "destroyResponder");
+	if(!m_destroyResponder) {
+		dlclose(m_handle);
+		throw "dlsym for destroyResponder failed";
+	}
+
+	m_responder = m_createResponder();
+}
+
+ResponderModule::~ResponderModule()
 {
-	public:
-		Responder();
-		virtual ~Responder();
+	m_destroyResponder(m_responder);
+	dlclose(m_handle);
+}
 
-		virtual void addOption(const std::string &option, const std::string &value);
+const char *
+ResponderModule::getResponderName() const
+{
+	return m_getResponderName();
+}
 
-		virtual bool matchesRequest(const HttpRequest *request) const = 0;
-		virtual ResponderContext *respond(const HttpRequest *request, HttpResponse *response) = 0;
-};
-
-#define XVIWEB_RESPONDER(CLASSNAME) extern "C" { const char *getResponderName() { return #CLASSNAME; } Responder *createResponder() { return new CLASSNAME(); } void destroyResponder(Responder *p) { delete p; } }
-
-#endif /* __XVIWEB_RESPONDER_H__ */
+Responder *
+ResponderModule::getResponder()
+{
+	return m_responder;
+}

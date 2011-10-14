@@ -23,33 +23,30 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __FILERESPONDER_H__
-#define __FILERESPONDER_H__
+#ifndef __RESPONDERMODULE_H__
+#define __RESPONDERMODULE_H__
 
-#include <string>
-#include <vector>
 #include <xviweb/Responder.h>
 
-class FileResponder : public Responder
+typedef const char *(*GET_RESPONDER_NAME_FN)();
+typedef Responder *(*CREATE_RESPONDER_FN)();
+typedef void (*DESTROY_RESPONDER_FN)(Responder *);
+
+class ResponderModule
 {
 	private:
-		std::string m_rootDirectory;
-
-		std::vector <std::string> m_mimeTypes;
-		std::vector <std::string> m_mimeFileExtensions;
+		void *m_handle;
+		GET_RESPONDER_NAME_FN m_getResponderName;
+		CREATE_RESPONDER_FN m_createResponder;
+		DESTROY_RESPONDER_FN m_destroyResponder;
+		Responder *m_responder;
 
 	public:
-		FileResponder();
-		virtual ~FileResponder();
+		ResponderModule(const char *path);
+		virtual ~ResponderModule();
 
-		void setRootDirectory(const std::string &dir);
-		std::string getRootDirectory() const;
-
-		void addMimeType(const std::string &type, const std::string &fileExtension);
-		std::string getMimeTypeForFile(const std::string &path) const;
-
-		bool matchesRequest(const HttpRequest *request) const;
-		ResponderContext *respond(const HttpRequest *request, HttpResponse *response);
+		const char *getResponderName() const;
+		Responder *getResponder();
 };
 
-#endif /* __FILERESPONDER_H__ */
+#endif /* __RESPONDERMODULE_H__ */

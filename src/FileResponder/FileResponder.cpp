@@ -51,22 +51,23 @@ FileResponder::~FileResponder()
 }
 
 void
-FileResponder::setRootDirectory(const std::string &dir)
+FileResponder::addOption(const string &option, const string &value)
 {
-	m_rootDirectory = dir;
-}
-
-string
-FileResponder::getRootDirectory() const
-{
-	return m_rootDirectory;
+	if(option == "rootDirectory") {
+		m_rootDirectory = value;
+	} else if(option == "mimeType") {
+		vector <string> values = String::split(value, ";");
+		if(values.size() == 2) {
+			m_mimeTypes.push_back(values[0]);
+			m_mimeFileExtensions.push_back(string(".") + values[1]);
+		}
+	}
 }
 
 void
-FileResponder::addMimeType(const string &type, const string &fileExtension)
+FileResponder::addMimeType(const string &mimeType, const string &fileExtension)
 {
-	m_mimeTypes.push_back(type);
-	m_mimeFileExtensions.push_back(string(".") + fileExtension);
+	addOption("mimeType", mimeType + ";" + fileExtension);
 }
 
 string
@@ -183,3 +184,5 @@ FileResponder::respond(const HttpRequest *request, HttpResponse *response)
 	close(fd);
 	return NULL;
 }
+
+XVIWEB_RESPONDER(FileResponder);

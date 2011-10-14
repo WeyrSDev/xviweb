@@ -23,27 +23,32 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef __FILERESPONDER_H__
+#define __FILERESPONDER_H__
+
+#include <string>
+#include <vector>
 #include <xviweb/Responder.h>
-#include "Util.h"
 
-ResponderContext::ResponderContext()
+class FileResponder : public Responder
 {
-}
+	private:
+		std::string m_rootDirectory;
 
-ResponderContext::~ResponderContext()
-{
-}
+		std::vector <std::string> m_mimeTypes;
+		std::vector <std::string> m_mimeFileExtensions;
 
-long
-ResponderContext::getResponseInterval() const
-{
-	return 50;
-}
+	public:
+		FileResponder();
+		virtual ~FileResponder();
 
-Responder::Responder()
-{
-}
+		void addOption(const std::string &option, const std::string &value);
 
-Responder::~Responder()
-{
-}
+		void addMimeType(const std::string &type, const std::string &fileExtension);
+		std::string getMimeTypeForFile(const std::string &path) const;
+
+		bool matchesRequest(const HttpRequest *request) const;
+		ResponderContext *respond(const HttpRequest *request, HttpResponse *response);
+};
+
+#endif /* __FILERESPONDER_H__ */
