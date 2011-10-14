@@ -24,6 +24,7 @@
  */
 
 #include <iostream>
+#include <cstring>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <netinet/in.h>

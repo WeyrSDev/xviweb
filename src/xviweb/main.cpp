@@ -23,8 +23,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <csignal>
 #include <iostream>
+#include <csignal>
+#include <cstdlib>
+#include <cstring>
 #include "ResponderModule.h"
 #include "Server.h"
 
