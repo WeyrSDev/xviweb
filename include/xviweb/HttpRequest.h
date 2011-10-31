@@ -33,8 +33,8 @@ class HttpRequest
 	public:
 		virtual std::string getVerb() const = 0;
 		virtual std::string getPath() const = 0;
-		virtual std::string getPhysicalPath() const = 0;
 		virtual std::string getVersion() const = 0;
+		virtual std::string getVHostRoot() const = 0;
 		virtual std::string getQueryStringValue(const std::string &name) const = 0;
 		virtual std::string getHeaderValue(const std::string &name) const = 0;
 		virtual std::string getPostDataValue(const std::string &name) const = 0;

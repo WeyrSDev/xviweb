@@ -138,7 +138,7 @@ FileResponder::respond(const HttpRequest *request, HttpResponse *response)
 		return NULL;
 	}
 
-	path = m_rootDirectory + path;
+	path = request->getVHostRoot() + path;
 
 	// open the file and get its status
 	struct stat status;

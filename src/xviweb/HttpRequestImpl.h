@@ -36,8 +36,8 @@ class HttpRequestImpl : public HttpRequest
 	private:
 		std::string m_verb;
 		std::string m_path;
-		std::string m_physicalPath;
 		std::string m_version;
+		std::string m_vhostRoot;
 
 		HttpRequestMap m_queryStringMap;
 		HttpRequestMap m_headerMap;
@@ -46,8 +46,8 @@ class HttpRequestImpl : public HttpRequest
 	public:
 		std::string getVerb() const;
 		std::string getPath() const;
-		std::string getPhysicalPath() const;
 		std::string getVersion() const;
+		std::string getVHostRoot() const;
 		std::string getQueryStringValue(const std::string &name) const;
 		std::string getHeaderValue(const std::string &name) const;
 		std::string getPostDataValue(const std::string &name) const;
@@ -55,7 +55,7 @@ class HttpRequestImpl : public HttpRequest
 		bool parseRequestLine(const std::string &line);
 		bool parseHeaderLine(const std::string &line);
 		bool parsePostData(const std::string &line);
-		bool setPhysicalPathRoot(const std::string &root);
+		void setVHostRoot(const std::string &root);
 };
 
 #endif /* __HTTPREQUESTIMPL_H__ */

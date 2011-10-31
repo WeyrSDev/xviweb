@@ -26,10 +26,13 @@
 #ifndef __SERVER_H__
 #define __SERVER_H__
 
+#include <map>
 #include <vector>
 #include <xviweb/Responder.h>
 #include "HttpConnection.h"
 #include "HttpResponseImpl.h"
+
+typedef std::map<std::string, std::string> ServerMap;
 
 class ServerConnection
 {
@@ -49,6 +52,9 @@ class Server
 		Address m_address;
 		unsigned short m_port;
 
+		std::string m_defaultRoot;
+		ServerMap m_vhostMap;
+
 		std::vector <Responder *> m_responders;
 		std::vector <ServerConnection> m_connections;
 
@@ -56,15 +62,23 @@ class Server
 		void processRequest(ServerConnection *conn);
 
 	public:
-		Server(const Address &address, unsigned short port);
+		Server();
 		virtual ~Server();
 
 		const Address &getAddress() const;
+		void setAddress(const Address &address);
+
 		unsigned short getPort() const;
+		void setPort(unsigned short port);
+
+		void setDefaultRoot(const std::string &root);
+		void addVHost(const std::string &hostname, const std::string &root);
 
 		void attachResponder(Responder *responder);
 
+		void start();
 		void cycle();
+		void stop();
 };
 
 #endif /* __SERVER_H__ */

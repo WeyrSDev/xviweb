@@ -53,7 +53,7 @@ class HttpConnection : public Connection
 		virtual ~HttpConnection();
 
 		HttpConnectionState getState() const;
-		const HttpRequestImpl *getRequest() const;
+		HttpRequestImpl *getRequest();
 
 		void beginResponse();
 		void endResponse();

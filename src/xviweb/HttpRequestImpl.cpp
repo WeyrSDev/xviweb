@@ -42,15 +42,15 @@ HttpRequestImpl::getPath() const
 }
 
 string
-HttpRequestImpl::getPhysicalPath() const
-{
-	return m_physicalPath;
-}
-
-string
 HttpRequestImpl::getVersion() const
 {
 	return m_version;
+}
+
+string
+HttpRequestImpl::getVHostRoot() const
+{
+	return m_vhostRoot;
 }
 
 string
@@ -159,45 +159,8 @@ HttpRequestImpl::parsePostData(const string &line)
 	return true;
 }
 
-bool
-HttpRequestImpl::setPhysicalPathRoot(const string &root)
+void
+HttpRequestImpl::setVHostRoot(const string &root)
 {
-	// not confident that the commented out code below
-	// works right yet, so just return an empty string
-	// if the requested path contains a ..
-	if(m_path.find("..") != string::npos) {
-		m_physicalPath = string("");
-		return false;
-	}
-
-	string newPath = m_path;
-
-	// replace back slashes with forward slashes
-	size_t tmp;
-	while((tmp = newPath.find('\\')) != string::npos)
-		newPath[tmp] = '/';
-
-	// replace double slashes with single slashes
-	while((tmp = newPath.find("//")) != string::npos)
-		newPath.erase(tmp, 1);
-
-#if 0
-	// make sure .. isn't used to go above the root directory
-	int depth = 0;
-	for(int i = 0; i < (int)newPath.length() - 3; ++i) {
-		if(newPath[i] == '/') {
-			if(newPath[i+1] == '.' && newPath[i+2] == '.' && newPath[i+3] == '/') {
-				if(--depth < 0)
-					return string("");
-				i += 3;
-			} else {
-				++depth;
-			}
-		}
-	}
-#endif
-
-	m_path = newPath;
-	m_physicalPath = root + newPath;
-	return true;
+	m_vhostRoot = root;
 }

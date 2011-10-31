@@ -88,16 +88,30 @@ showUsageMessage(ostream &stream, const char *executableName)
 	stream << "Options:" << endl;
 	showOptionDescription(stream, "--address <address>", "Sets the address that the server binds to.\nThe default value is 127.0.0.1.");
 	showOptionDescription(stream, "--port <port>", "Sets the port that the server binds to.\nThe default value is 8080.");
+	showOptionDescription(stream, "--defaultRoot <root>", "Sets the default root directory.");
+	showOptionDescription(stream, "--addVHost <hostname> <root>", "Adds a virtual host with the given hostname and root directory.");
 	showOptionDescription(stream, "--help", "Show this help message.");
 	showOptionDescription(stream, "--version", "Show version information.");
+}
+
+static bool
+missingParameters(const char *path, const char *option,
+                  int argc, int i, int numParams)
+{
+	if(argc <= i + numParams) {
+		cerr << "Error: Missing parameter(s) for option " << option << endl << endl;
+		showUsageMessage(cerr, path);
+		return true;
+	}
+
+	return false;
 }
 
 int
 main(int argc, char *argv[])
 {
-	const char *addressString = "127.0.0.1";
-	unsigned short port = 8080;
 	vector <ResponderModule *> modules;
+	Server *server = new Server();
 
 	// parse command line options
 	for(int i = 1; i < argc; ++i) {
@@ -117,18 +131,57 @@ main(int argc, char *argv[])
 
 		// set the address
 		if(strcmp(argv[i], "--address") == 0) {
-			addressString = argv[++i];
+			if(missingParameters(argv[0], "--address", argc, i, 1)) {
+				delete server;
+				return 1;
+			}
+
+			server->setAddress(argv[++i]);
 			continue;
 		}
 
 		// set the port
 		if(strcmp(argv[i], "--port") == 0) {
-			port = (unsigned short)atoi(argv[++i]);
+			if(missingParameters(argv[0], "--port", argc, i, 1)) {
+				delete server;
+				return 1;
+			}
+
+			server->setPort((unsigned short)atoi(argv[++i]));
+			continue;
+		}
+
+		// set the default root directory
+		if(strcmp(argv[i], "--defaultRoot") == 0) {
+			if(missingParameters(argv[0], "--defaultRoot", argc, i, 1)) {
+				delete server;
+				return 1;
+			}
+
+			server->setDefaultRoot(argv[++i]);
+			continue;
+		}
+
+		// add a vhost
+		if(strcmp(argv[i], "--addVHost") == 0) {
+			if(missingParameters(argv[0], "--addVHost", argc, i, 2)) {
+				delete server;
+				return 1;
+			}
+
+			const char *hostname = argv[++i];
+			const char *root = argv[++i];
+			server->addVHost(hostname, root);
 			continue;
 		}
 
 		// load responder
 		if(strcmp(argv[i], "--loadResponder") == 0) {
+			if(missingParameters(argv[0], "--loadResponder", argc, i, 1)) {
+				delete server;
+				return 1;
+			}
+
 			const char *path = argv[++i];
 			try {
 				ResponderModule *module = new ResponderModule(path);
@@ -147,21 +200,25 @@ main(int argc, char *argv[])
 
 	signal(SIGINT, interrupt);
 
-	Address address(addressString);
-	Server *server;
-
-	try {
-		server = new Server(address, port);
-	} catch(const char *ex) {
-		cerr << "Error starting server: " << ex << endl;
-		return 1;
-	}
-
 	// attach responders to the server
 	for(unsigned int i = 0; i < modules.size(); ++i)
 		server->attachResponder(modules[i]->getResponder());
 
-	cout << "Listening for connections at " << address.toString() << " port " << port << endl;
+	// start the server
+	try {
+		server->start();
+	} catch(const char *ex) {
+		cerr << "Error starting server: " << ex << endl;
+
+		// delete server and responder modules
+		delete server;
+		for(unsigned int i = 0; i < modules.size(); ++i)
+			delete modules[i];
+
+		return 1;
+	}
+
+	cout << "Listening for connections at " << server->getAddress().toString() << " port " << server->getPort() << endl;
 
 	while(g_running) {
 		try {

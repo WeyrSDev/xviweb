@@ -49,8 +49,8 @@ HttpConnection::getState() const
 	return m_state;
 }
 
-const HttpRequestImpl *
-HttpConnection::getRequest() const
+HttpRequestImpl *
+HttpConnection::getRequest()
 {
 	return &m_request;
 }
