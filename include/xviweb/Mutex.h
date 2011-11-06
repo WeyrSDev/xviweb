@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Josh A. Beam
+ * Copyright (C) 2008-2011 Josh A. Beam
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,55 +23,18 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __SERVER_H__
-#define __SERVER_H__
+#ifndef __XVIWEB_MUTEX_H__
+#define __XVIWEB_MUTEX_H__
 
-#include <map>
-#include <vector>
-#include <xviweb/Responder.h>
-#include "HttpConnection.h"
-#include "HttpResponseImpl.h"
-#include "ServerWorker.h"
-
-class Server
+class Mutex
 {
-	private:
-		int m_fd;
-		Address m_address;
-		unsigned short m_port;
-
-		std::string m_defaultRoot;
-		ServerMap m_vhostMap;
-
-		std::vector <Responder *> m_responders;
-
-		unsigned int m_numWorkers;
-		unsigned int m_nextWorker;
-		std::vector <ServerWorker *> m_workers;
-
-		HttpConnection *acceptHttpConnection();
-
 	public:
-		Server();
-		virtual ~Server();
+		virtual ~Mutex() {}
 
-		const Address &getAddress() const;
-		void setAddress(const Address &address);
+		virtual void lock() = 0;
+		virtual void unlock() = 0;
 
-		unsigned short getPort() const;
-		void setPort(unsigned short port);
-
-		void setDefaultRoot(const std::string &root);
-		void addVHost(const std::string &hostname, const std::string &root);
-
-		void attachResponder(Responder *responder);
-
-		unsigned int getNumWorkers() const;
-		void setNumWorkers(unsigned int numWorkers);
-
-		void start();
-		void cycle();
-		void stop();
+		static Mutex *create();
 };
 
-#endif /* __SERVER_H__ */
+#endif /* __XVIWEB_MUTEX_H__ */

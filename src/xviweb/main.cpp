@@ -27,6 +27,7 @@
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
+#include <xviweb/String.h>
 #include "ResponderModule.h"
 #include "Server.h"
 
@@ -86,10 +87,11 @@ showUsageMessage(ostream &stream, const char *executableName)
 	stream << "Usage: " << executableName << " [options]" << endl << endl;
 
 	stream << "Options:" << endl;
+	showOptionDescription(stream, "--numWorkers <number>", "Sets the number of worker threads to the given number.\nThe number must be greater than or equal to 1.\nThe default value is 2.");
 	showOptionDescription(stream, "--address <address>", "Sets the address that the server binds to.\nThe default value is 127.0.0.1.");
 	showOptionDescription(stream, "--port <port>", "Sets the port that the server binds to.\nThe default value is 8080.");
-	showOptionDescription(stream, "--defaultRoot <root>", "Sets the default root directory.");
-	showOptionDescription(stream, "--addVHost <hostname> <root>", "Adds a virtual host with the given hostname and root directory.");
+	showOptionDescription(stream, "--defaultRoot <root>", "Sets the default root directory.\nThe default behavior is to have\nno default root directory.");
+	showOptionDescription(stream, "--addVHost <hostname> <root>", "Adds a virtual host with the given\nhostname and root directory.");
 	showOptionDescription(stream, "--help", "Show this help message.");
 	showOptionDescription(stream, "--version", "Show version information.");
 }
@@ -118,6 +120,7 @@ main(int argc, char *argv[])
 		// show the help message
 		if(strcmp(argv[i], "--help") == 0) {
 			showUsageMessage(cout, argv[0]);
+			delete server;
 			return 0;
 		}
 
@@ -126,7 +129,26 @@ main(int argc, char *argv[])
 			cout << "xviweb " PROJECT_VERSION << endl;
 			cout << "Copyright (C) 2011 Josh A. Beam <josh@joshbeam.com>" << endl;
 			cout << "There is NO WARRANTY for this software." << endl;
+			delete server;
 			return 0;
+		}
+
+		// set the number of worker threads
+		if(strcmp(argv[i], "--numWorkers") == 0) {
+			if(missingParameters(argv[0], "--numWorkers", argc, i, 1)) {
+				delete server;
+				return 1;
+			}
+
+			unsigned int numWorkers = String::toUInt(argv[++i]);
+			if(numWorkers < 1) {
+				cerr << "Error: Argument to --numWorkers option must be greater than or equal to 1." << endl;
+				delete server;
+				return 1;
+			}
+
+			server->setNumWorkers(numWorkers);
+			continue;
 		}
 
 		// set the address
@@ -147,7 +169,7 @@ main(int argc, char *argv[])
 				return 1;
 			}
 
-			server->setPort((unsigned short)atoi(argv[++i]));
+			server->setPort((unsigned short)String::toUInt(argv[++i]));
 			continue;
 		}
 

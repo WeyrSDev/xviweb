@@ -26,30 +26,19 @@
 #include <iostream>
 #include <cstring>
 #include <sys/socket.h>
-#include <sys/select.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <poll.h>
 #include <xviweb/String.h>
 #include "Server.h"
-#include "Util.h"
 
 using namespace std;
-
-ServerConnection::ServerConnection(HttpConnection *connectionValue,
-                                   HttpResponseImpl *responseValue,
-                                   ResponderContext *contextValue)
-{
-	connection = connectionValue;
-	response = responseValue;
-	context = contextValue;
-	wakeupTime = 0;
-}
 
 Server::Server()
  : m_address("127.0.0.1"), m_port(8080)
 {
 	m_fd = -1;
+	m_numWorkers = 2;
 }
 
 Server::~Server()
@@ -97,6 +86,18 @@ void
 Server::attachResponder(Responder *responder)
 {
 	m_responders.insert(m_responders.begin(), responder);
+}
+
+unsigned int
+Server::getNumWorkers() const
+{
+	return m_numWorkers;
+}
+
+void
+Server::setNumWorkers(unsigned int numWorkers)
+{
+	m_numWorkers = numWorkers;
 }
 
 void
@@ -151,6 +152,11 @@ Server::start()
 		close(m_fd);
 		throw "listen() failed";
 	}
+
+	// create workers
+	m_nextWorker = 0;
+	for(unsigned int i = 0; i < m_numWorkers; ++i)
+		m_workers.push_back(new ServerWorker(m_defaultRoot, m_vhostMap, m_responders));
 }
 
 HttpConnection *
@@ -193,135 +199,22 @@ Server::acceptHttpConnection()
 }
 
 void
-Server::processRequest(ServerConnection *conn)
-{
-	// create HttpResponse for the connection
-	conn->response = new HttpResponseImpl(conn->connection);
-
-	// set the request's vhost root
-	HttpRequestImpl *request = conn->connection->getRequest();
-	ServerMap::const_iterator iter = m_vhostMap.find(String::toLower(request->getHeaderValue("Host")));
-	if(iter != m_vhostMap.end()) {
-		request->setVHostRoot(iter->second);
-	} else {
-		// no vhost found for the given host; use the
-		// default root if one is set, otherwise end
-		// the response
-		if(m_defaultRoot.length() != 0) {
-			request->setVHostRoot(m_defaultRoot);
-		} else {
-			string message = "Your request could not be processed because there is no virtual host associated with " + request->getHeaderValue("Host") + ".";
-			conn->response->sendErrorResponse(500, "No Virtual Host", message.c_str());
-			return;
-		}
-	}
-
-	// loop through responders and stop when
-	// one matches the request
-	unsigned int i;
-	for(i = 0; i < m_responders.size(); ++i) {
-		Responder *responder = m_responders[i];
-		if(responder->matchesRequest(conn->connection->getRequest())) {
-			// respond to the request
-			conn->context = responder->respond(conn->connection->getRequest(), conn->response);
-			if(conn->context != NULL)
-				conn->wakeupTime = getMilliseconds() + conn->context->getResponseInterval();
-			break;
-		}
-	}
-
-	// just end the response if no responders handled it
-	if(i == m_responders.size())
-		conn->response->sendErrorResponse(500, "No Responder", "Your request could not be processed because there is no module loaded that is capable of handing the request.");
-}
-
-void
 Server::cycle()
 {
-	long currentTime = getMilliseconds();
-	long sleepTime = 1000;
+	struct pollfd pfd;
+	pfd.fd = m_fd;
+	pfd.events = POLLIN;
+	pfd.revents = 0;
 
-	// process connections
-	for(unsigned int i = 0; i < m_connections.size(); ++i) {
-		ServerConnection *sconn = &(m_connections[i]);
-		HttpConnection *conn = sconn->connection;
-
-		HttpConnectionState state = conn->getState();
-		bool done = (state == HTTP_CONNECTION_STATE_DONE) ||
-		            (state != HTTP_CONNECTION_STATE_SENDING_RESPONSE &&
-		             conn->getMillisecondsSinceLastRead() > 10000);
-
-		// remove connections in the done state or continue
-		// responses for ones that have associated contexts
-		if(done) {
-			delete conn;
-			if(sconn->response != NULL)
-				delete sconn->response;
-			if(sconn->context != NULL)
-				delete sconn->context;
-			m_connections.erase(m_connections.begin() + (i--));
-		} else if(sconn->context != NULL) {
-			if(sconn->wakeupTime <= currentTime) {
-				// continue the context's response; it may return
-				// a pointer to itself, a pointer to a new context,
-				// or null if it's done
-				sconn->context = sconn->context->continueResponse(conn->getRequest(), sconn->response);
-				if(sconn->context != NULL)
-					sconn->wakeupTime = currentTime + sconn->context->getResponseInterval();
-			} else {
-				long timeDiff = sconn->wakeupTime - currentTime;
-				if(timeDiff < sleepTime)
-					sleepTime = timeDiff;
-			}
-		}
-	}
-
-	// create pollfd array
-	nfds_t bsIndex = (nfds_t)m_connections.size();
-	nfds_t nfds = bsIndex + 1;
-	struct pollfd *fds = new struct pollfd[nfds];
-
-	// add each connection to fds
-	for(unsigned int i = 0; i < m_connections.size(); ++i) {
-		fds[i].fd = m_connections[i].connection->getFileDescriptor();
-		fds[i].events = POLLIN;
-		fds[i].revents = 0;
-	}
-
-	// add the bound socket to fds
-	fds[bsIndex].fd = m_fd;
-	fds[bsIndex].events = POLLIN;
-	fds[bsIndex].revents = 0;
-
-	// poll bound socket and connection sockets
-	if(poll(fds, nfds, sleepTime) > 0) {
-		// handle connections to the bound socket
-		if(fds[bsIndex].revents & POLLIN) {
+	// poll for connection
+	if(poll(&pfd, 1, -1) > 0) {
+		if(pfd.revents & POLLIN != 0) {
+			// accept the new connection and add it to a worker
 			HttpConnection *conn = acceptHttpConnection();
-			m_connections.push_back(ServerConnection(conn));
-		}
-
-		// read from connections
-		for(unsigned int i = 0; i < m_connections.size(); ++i) {
-			if((fds[i].revents & POLLIN) == 0)
-				continue;
-
-			// read from the connection
-			HttpConnection *conn = m_connections[i].connection;
-			conn->doRead();
-
-			switch(conn->getState()) {
-				default:
-					break;
-				case HTTP_CONNECTION_STATE_RECEIVED_REQUEST:
-					// full request received
-					processRequest(&m_connections[i]);
-					break;
-			}
+			m_workers[m_nextWorker]->addConnection(conn);
+			m_nextWorker = (m_nextWorker + 1) % m_workers.size();
 		}
 	}
-
-	delete [] fds;
 }
 
 void
@@ -334,15 +227,8 @@ Server::stop()
 	close(m_fd);
 	m_fd = -1;
 
-	// delete all connection data
-	for(unsigned int i = 0; i < m_connections.size(); ++i) {
-		if(m_connections[i].context != NULL)
-			delete m_connections[i].context;
-		if(m_connections[i].response != NULL)
-			delete m_connections[i].response;
-		if(m_connections[i].connection != NULL)
-			delete m_connections[i].connection;
-	}
-
-	m_connections.clear();
+	// delete all workers
+	for(unsigned int i = 0; i < m_workers.size(); ++i)
+		delete m_workers[i];
+	m_workers.clear();
 }

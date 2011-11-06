@@ -23,55 +23,56 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __SERVER_H__
-#define __SERVER_H__
+#ifndef __SERVERWORKER_H__
+#define __SERVERWORKER_H__
 
 #include <map>
 #include <vector>
+#include <pthread.h>
+#include <xviweb/Mutex.h>
 #include <xviweb/Responder.h>
 #include "HttpConnection.h"
 #include "HttpResponseImpl.h"
-#include "ServerWorker.h"
 
-class Server
+typedef std::map<std::string, std::string> ServerMap;
+
+class ServerConnection
 {
-	private:
-		int m_fd;
-		Address m_address;
-		unsigned short m_port;
-
-		std::string m_defaultRoot;
-		ServerMap m_vhostMap;
-
-		std::vector <Responder *> m_responders;
-
-		unsigned int m_numWorkers;
-		unsigned int m_nextWorker;
-		std::vector <ServerWorker *> m_workers;
-
-		HttpConnection *acceptHttpConnection();
-
 	public:
-		Server();
-		virtual ~Server();
+		HttpConnection *connection;
+		HttpResponseImpl *response;
+		ResponderContext *context;
+		long wakeupTime;
 
-		const Address &getAddress() const;
-		void setAddress(const Address &address);
-
-		unsigned short getPort() const;
-		void setPort(unsigned short port);
-
-		void setDefaultRoot(const std::string &root);
-		void addVHost(const std::string &hostname, const std::string &root);
-
-		void attachResponder(Responder *responder);
-
-		unsigned int getNumWorkers() const;
-		void setNumWorkers(unsigned int numWorkers);
-
-		void start();
-		void cycle();
-		void stop();
+		ServerConnection(HttpConnection *connectionValue, HttpResponseImpl *responseValue = NULL, ResponderContext *contextValue = NULL);
 };
 
-#endif /* __SERVER_H__ */
+class ServerWorker
+{
+	private:
+		std::string &m_defaultRoot;
+		ServerMap &m_vhostMap;
+		std::vector <Responder *> &m_responders;
+
+		Mutex *m_connectionsMutex;
+		std::vector <ServerConnection> m_connections;
+
+		int m_pipefds[2];
+
+		bool m_running;
+		pthread_t m_thread;
+
+		void processRequest(ServerConnection *conn);
+		void breakPoll();
+		void cycle();
+
+	public:
+		ServerWorker(std::string &defaultRoot, ServerMap &vhostMap, std::vector <Responder *> &responders);
+		virtual ~ServerWorker();
+
+		void addConnection(HttpConnection *connection);
+
+		void run();
+};
+
+#endif /* __SERVERWORKER_H__ */
