@@ -17,7 +17,7 @@ add_executable(xviweb ${SRCS})
 
 set_target_properties(xviweb PROPERTIES ENABLE_EXPORTS ON)
 
-target_link_libraries(xviweb dl)
+target_link_libraries(xviweb dl pthread)
 
 install(
 	TARGETS xviweb
