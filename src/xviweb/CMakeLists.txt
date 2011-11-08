@@ -4,11 +4,9 @@ set(SRCS
 	HttpConnection.cpp
 	HttpRequestImpl.cpp
 	HttpResponseImpl.cpp
-	Mutex.cpp
 	Responder.cpp
 	ResponderModule.cpp
 	Server.cpp
-	ServerWorker.cpp
 	String.cpp
 	Util.cpp
 	main.cpp

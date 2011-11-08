@@ -31,7 +31,19 @@
 #include <xviweb/Responder.h>
 #include "HttpConnection.h"
 #include "HttpResponseImpl.h"
-#include "ServerWorker.h"
+
+typedef std::map<std::string, std::string> ServerMap;
+
+class ServerConnection
+{
+	public:
+		HttpConnection *connection;
+		HttpResponseImpl *response;
+		ResponderContext *context;
+		long wakeupTime;
+
+		ServerConnection(HttpConnection *connectionValue, HttpResponseImpl *responseValue = NULL, ResponderContext *contextValue = NULL);
+};
 
 class Server
 {
@@ -44,12 +56,10 @@ class Server
 		ServerMap m_vhostMap;
 
 		std::vector <Responder *> m_responders;
-
-		unsigned int m_numWorkers;
-		unsigned int m_nextWorker;
-		std::vector <ServerWorker *> m_workers;
+		std::vector <ServerConnection> m_connections;
 
 		HttpConnection *acceptHttpConnection();
+		void processRequest(ServerConnection *conn);
 
 	public:
 		Server();
@@ -65,9 +75,6 @@ class Server
 		void addVHost(const std::string &hostname, const std::string &root);
 
 		void attachResponder(Responder *responder);
-
-		unsigned int getNumWorkers() const;
-		void setNumWorkers(unsigned int numWorkers);
 
 		void start();
 		void cycle();
