@@ -30,6 +30,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <poll.h>
+#include <fcntl.h>
 #include <xviweb/String.h>
 #include "Server.h"
 #include "Util.h"
@@ -187,6 +188,12 @@ Server::acceptHttpConnection()
 		memcpy(address, &sin.sin6_addr, 4);
 		type = ADDRESS_TYPE_IPV6;
 		port = ntohs(sin.sin6_port);
+	}
+
+	// make the socket nonblocking
+	if(fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
+		close(fd);
+		throw "fcntl() failed";
 	}
 
 	return new HttpConnection(fd, Address(address, type), port);
