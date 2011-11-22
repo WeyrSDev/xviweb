@@ -44,6 +44,8 @@ class HttpResponse
 		virtual std::string getHeaderValue(const std::string &headerName) const = 0;
 		virtual void setHeaderValue(const std::string &headerName, const std::string &headerValue) = 0;
 
+		virtual void redirect(const std::string &location) = 0;
+
 		virtual void sendString(const char *s, size_t length) = 0;
 		virtual void sendString(const char *s) = 0;
 		virtual void sendString(const std::string &s) = 0;

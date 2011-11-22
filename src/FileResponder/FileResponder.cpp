@@ -150,19 +150,27 @@ FileResponder::respond(const HttpRequest *request, HttpResponse *response)
 		return NULL;
 	}
 
-	// don't show directory listings
+	// handle directory accesses
 	if(S_ISDIR(status.st_mode)) {
 		close(fd);
 
-		// see if an index.html exists in the directory;
-		// if not, show an error message
-		path += "/index.html";
-		fd = open(path.c_str(), O_RDONLY);
-		if(fd == -1 || fstat(fd, &status) == -1 || S_ISDIR(status.st_mode)) {
-			if(fd != -1)
-				close(fd);
-			response->sendErrorResponse(403, "Forbidden", "You do not have access to directory listings.");
+		// if the path in the request does not end with
+		// a slash, just do a redirect
+		if(String::endsWith(request->getPath(), "/") == false) {
+			response->redirect(request->getPath() + "/");
 			return NULL;
+		} else {
+			// see if an index.html exists in the directory;
+			// if not, show an error message since we don't
+			// show directory listings
+			path += "/index.html";
+			fd = open(path.c_str(), O_RDONLY);
+			if(fd == -1 || fstat(fd, &status) == -1 || S_ISDIR(status.st_mode)) {
+				if(fd != -1)
+					close(fd);
+				response->sendErrorResponse(403, "Forbidden", "You do not have access to directory listings.");
+				return NULL;
+			}
 		}
 	}
 

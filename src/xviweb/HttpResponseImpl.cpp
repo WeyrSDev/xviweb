@@ -105,6 +105,18 @@ HttpResponseImpl::setHeaderValue(const string &headerName,
 }
 
 void
+HttpResponseImpl::redirect(const string &location)
+{
+	setStatus(302, "Found");
+	setContentType("text/html");
+	setContentLength(0);
+	setHeaderValue("Location", location);
+
+	beginResponse();
+	endResponse();
+}
+
+void
 HttpResponseImpl::beginResponse()
 {
 	m_responding = true;

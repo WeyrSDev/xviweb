@@ -61,6 +61,8 @@ class HttpResponseImpl : public HttpResponse
 		std::string getHeaderValue(const std::string &headerName) const;
 		void setHeaderValue(const std::string &headerName, const std::string &headerValue);
 
+		void redirect(const std::string &location);
+
 		void sendString(const char *s, size_t length);
 		void sendString(const char *s);
 		void sendString(const std::string &s);
