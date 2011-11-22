@@ -153,8 +153,17 @@ FileResponder::respond(const HttpRequest *request, HttpResponse *response)
 	// don't show directory listings
 	if(S_ISDIR(status.st_mode)) {
 		close(fd);
-		response->sendErrorResponse(403, "Forbidden", "You do not have access to directory listings.");
-		return NULL;
+
+		// see if an index.html exists in the directory;
+		// if not, show an error message
+		path += "/index.html";
+		fd = open(path.c_str(), O_RDONLY);
+		if(fd == -1 || fstat(fd, &status) == -1 || S_ISDIR(status.st_mode)) {
+			if(fd != -1)
+				close(fd);
+			response->sendErrorResponse(403, "Forbidden", "You do not have access to directory listings.");
+			return NULL;
+		}
 	}
 
 	// get the MIME type for the file; if there's no
